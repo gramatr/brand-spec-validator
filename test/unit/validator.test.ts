@@ -5,14 +5,14 @@ import { validateBrand } from '../../src/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.resolve(__dirname, '..', 'fixtures');
-const SPEC = path.resolve(__dirname, '..', '..', '..', 'brand-spec');
 
 function fixture(name: string) {
   return path.join(FIXTURES, name);
 }
 
 async function run(name: string) {
-  return validateBrand(fixture(name), { specPath: SPEC });
+  // Uses the vendored brand-spec that ships with this package.
+  return validateBrand(fixture(name));
 }
 
 describe('valid fixtures', () => {

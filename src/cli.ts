@@ -12,6 +12,7 @@ import path from 'node:path';
 import { Command } from 'commander';
 import { validateBrand } from './validator.js';
 import { formatHuman, formatJson } from './reporter.js';
+import { vendoredSpecPath } from './schema/load.js';
 
 const program = new Command();
 
@@ -21,8 +22,7 @@ program
   .argument('<brand-path>', 'path to the brand repo to validate')
   .option(
     '--spec <path>',
-    'path to a checkout of the gramatr/brand-spec repo (we read its brand.yaml)',
-    defaultSpecPath(),
+    'override path to a checkout of the gramatr/brand-spec repo (defaults to the vendored copy that ships with this package)',
   )
   .option('--format <format>', 'output format: human | json', 'human')
   .option('--quiet', 'suppress warnings; show errors only', false)
@@ -30,7 +30,7 @@ program
   .action(async (brandPath: string, opts: ProgOpts) => {
     try {
       const result = await validateBrand(path.resolve(brandPath), {
-        specPath: path.resolve(opts.spec),
+        specPath: opts.spec ? path.resolve(opts.spec) : vendoredSpecPath(),
         freshness: opts.freshness,
       });
       if (opts.format === 'json') {
@@ -46,16 +46,10 @@ program
   });
 
 interface ProgOpts {
-  spec: string;
+  spec?: string;
   format: 'human' | 'json';
   quiet: boolean;
   freshness: boolean;
-}
-
-function defaultSpecPath(): string {
-  // Heuristic: ../brand-spec relative to cwd. Users typically run with both
-  // checkouts under the same parent directory.
-  return path.resolve(process.cwd(), '..', 'brand-spec');
 }
 
 program.parseAsync(process.argv);

@@ -6,5 +6,5 @@ export { validateBrand } from './validator.js';
 export type { ValidateOptions } from './validator.js';
 export type { ValidationResult, ValidationIssue, Severity } from './result.js';
 export { formatHuman, formatJson } from './reporter.js';
-export { loadBrandSpec } from './schema/load.js';
+export { loadBrandSpec, vendoredSpecPath } from './schema/load.js';
 export type { BrandSpec } from './schema/types.js';

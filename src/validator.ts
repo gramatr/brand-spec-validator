@@ -25,15 +25,18 @@ import { validateCommonFields } from './rules/common-fields.js';
 import { validateSourceAuthority } from './rules/source-authority.js';
 
 export interface ValidateOptions {
-  /** Path to a brand-spec checkout (we read its `brand.yaml`). */
-  specPath: string;
+  /**
+   * Optional path to a brand-spec checkout (we read its `brand.yaml`).
+   * When omitted, the vendored copy that ships with this package is used.
+   */
+  specPath?: string;
   /** When false, skip freshness warning rules. Default: true. */
   freshness?: boolean;
 }
 
 export async function validateBrand(
   brandPath: string,
-  options: ValidateOptions,
+  options: ValidateOptions = {},
 ): Promise<ValidationResult> {
   const spec = await loadBrandSpec({ specPath: options.specPath });
   const collector = new IssueCollector();

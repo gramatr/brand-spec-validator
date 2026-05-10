@@ -4,6 +4,9 @@
  * package, since the canonical layout is sibling checkouts).
  *
  * The three brand repos are private and MUST NOT be vendored.
+ *
+ * The brand-spec itself is now vendored with this package, so no
+ * sibling brand-spec checkout is required.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -13,7 +16,6 @@ import { promises as fs } from 'node:fs';
 import { validateBrand } from '../../src/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SPEC = path.resolve(__dirname, '..', '..', '..', 'brand-spec');
 
 const BRANDS_DIR =
   process.env['BRAND_SPEC_TEST_BRANDS_DIR'] ?? path.resolve(__dirname, '..', '..', '..');
@@ -37,11 +39,7 @@ describe('real brand integration', () => {
         console.warn(`[skip] ${brandPath} not found; set BRAND_SPEC_TEST_BRANDS_DIR`);
         return;
       }
-      if (!(await exists(SPEC))) {
-        console.warn(`[skip] brand-spec not found at ${SPEC}`);
-        return;
-      }
-      const result = await validateBrand(brandPath, { specPath: SPEC });
+      const result = await validateBrand(brandPath);
       if (result.errors.length > 0) {
         // Surface the errors in the test output so CI tells us exactly
         // which rule fired.
