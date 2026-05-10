@@ -1,0 +1,4 @@
+# stats fixture with broken YAML
+items:
+  - foo
+  bad-key: 1

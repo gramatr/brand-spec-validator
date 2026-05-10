@@ -1,0 +1,75 @@
+{
+  "name": "@gramatr/brand-spec-validator",
+  "version": "0.1.0",
+  "description": "Reference validator for brand-spec v1.2 — validates a brand repo against gramatr/brand-spec and reports errors, warnings, and freshness signals.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "brand-spec-validate": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "vendor",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "postbuild": "node -e \"import('fs').then(fs => fs.promises.chmod('dist/cli.js', 0o755))\"",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src test --ext .ts",
+    "format": "prettier --write \"{src,test}/**/*.ts\"",
+    "format:check": "prettier --check \"{src,test}/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "brand-spec",
+    "gramatr",
+    "validator",
+    "brand",
+    "schema",
+    "conformance",
+    "ai-agent"
+  ],
+  "author": "grāmatr",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gramatr/brand-spec-validator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gramatr/brand-spec-validator/issues"
+  },
+  "homepage": "https://github.com/gramatr/brand-spec-validator#readme",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "gray-matter": "^4.0.3",
+    "yaml": "^2.6.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0",
+    "eslint": "^9.15.0",
+    "prettier": "^3.4.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}

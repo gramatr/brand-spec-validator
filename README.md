@@ -26,7 +26,7 @@ Options:
 
 | Flag | Default | Description |
 |---|---|---|
-| `--spec <path>` | `../brand-spec` | Path to a checkout of the `gramatr/brand-spec` repo (we read its `brand.yaml`). |
+| `--spec <path>` | _vendored_ | Override path to a `gramatr/brand-spec` checkout. By default, the vendored copy that ships with this package is used (pinned to v1.2). |
 | `--format <fmt>` | `human` | `human` or `json`. |
 | `--quiet` | off | Suppress warnings; show errors only. |
 | `--no-freshness` | off | Skip freshness warning rules. |
@@ -40,7 +40,7 @@ Exit codes:
 Example:
 
 ```
-$ brand-spec-validate /home/me/work/my-brand --spec /home/me/work/brand-spec
+$ brand-spec-validate /home/me/work/my-brand
 ✗ identity.md: missing required frontmatter field: tagline [layers:identity]
 ⚠ proof/proof-points.md: last_updated 2025-08-01 is older than 180 days [proof-freshness-warn]
 ✓ 14 of 15 layers valid
@@ -52,9 +52,13 @@ $ brand-spec-validate /home/me/work/my-brand --spec /home/me/work/brand-spec
 ```ts
 import { validateBrand } from '@gramatr/brand-spec-validator';
 
-const result = await validateBrand('/path/to/brand-repo', {
-  specPath: '/path/to/brand-spec',
-});
+// Uses the vendored brand-spec that ships with this package.
+const result = await validateBrand('/path/to/brand-repo');
+
+// Or override with your own checkout (advanced):
+// const result = await validateBrand('/path/to/brand-repo', {
+//   specPath: '/path/to/brand-spec',
+// });
 
 if (result.errors.length > 0) {
   for (const err of result.errors) console.error(err.ruleId, err.path, err.message);

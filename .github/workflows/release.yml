@@ -1,0 +1,32 @@
+# Release workflow stub — disabled until npm publish is configured.
+#
+# To enable:
+#   1. Add NPM_TOKEN secret in repo settings.
+#   2. Uncomment the `on:` block below and remove the `workflow_dispatch`-only trigger.
+#   3. Push a `vX.Y.Z` tag.
+
+name: Release
+
+on:
+  workflow_dispatch:
+  # push:
+  #   tags:
+  #     - 'v*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: echo "publish step disabled in v0.1.0; configure NPM_TOKEN to enable"
+      # - run: npm publish --access public
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
