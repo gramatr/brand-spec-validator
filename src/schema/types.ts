@@ -73,7 +73,7 @@ const ValidationRuleSchema = z
   .object({
     id: z.string(),
     rule: z.string(),
-    severity: z.enum(['error', 'warn']).optional(),
+    severity: z.enum(['error', 'warn', 'info']).optional(),
   })
   .passthrough();
 

@@ -53,6 +53,7 @@ function finish(brandPath, spec, collector, layersChecked, layersValid) {
         schemaVersion: spec.contract_version,
         errors: collector.errors,
         warnings: collector.warnings,
+        infos: collector.infos,
         layersChecked,
         layersValid,
     };
