@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.4
+
+Sync vendored brand-spec to v1.5.0. v1.5 adds a new top-level `data-viz/` layer (single canonical home for chart palettes, axis behavior, and data-role color assignment), plus 5 new validation rules (`data-viz-color-tokens-resolve`, `data-viz-no-hex-redeclaration`, `data-viz-categorical-distinguishability`, `data-viz-sequential-monotonic`, `data-viz-framework-presence`).
+
+**No validator code changes required.** v1.5's additions are schema-additive: no new severity levels, no new field types the existing Zod model rejects. The vendored `brand.yaml` parses cleanly and all 20 existing tests pass unchanged.
+
+**New rule logic intentionally not implemented in this release.** The 5 new `data-viz-*` rules are present in the vendored spec metadata but their runtime checks (color-token resolution, hex-literal redeclaration detection, ΔE distinguishability, monotonic ordering, framework-doc presence) are deferred to a follow-up validator release. For now, brand repos containing a `data-viz/` directory are tolerated and counted as a recognized layer, but file contents are not validated against the new rules.
+
+Backward-compatible for consumers: existing API surface unchanged. All three real-world brands (next90-brand, gramatr-brand, lean-media-brand) validate clean against v1.5 with zero errors. Layer count reported by the validator increases from 16 to 17 to reflect the new `data-viz/` layer.
+
 ## 0.1.3
 
 Sync vendored brand-spec to v1.4.0. v1.4 adds a new top-level `journey/` layer (KYKC — Know Your Knowledge Customer), a new `methodology_provenance:` frontmatter convention, and 5 new validation rules (`journey-stage-slug-resolves`, `journey-stages-monotonic-order`, etc.).
