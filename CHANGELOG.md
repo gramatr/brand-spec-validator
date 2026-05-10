@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+Sync vendored brand-spec to v1.2.1. Adds awareness of `wordmark:` frontmatter and PNG/SVG format-preference convention. No validator code changes; both additions are additive recommendations not enforced rules.
+
 ## 0.1.0 (unreleased)
 
 Initial release. Targets brand-spec **v1.2** (contract `gramatr.brand@1.2.0`).
