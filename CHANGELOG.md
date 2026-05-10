@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.3
+
+Sync vendored brand-spec to v1.4.0. v1.4 adds a new top-level `journey/` layer (KYKC — Know Your Knowledge Customer), a new `methodology_provenance:` frontmatter convention, and 5 new validation rules (`journey-stage-slug-resolves`, `journey-stages-monotonic-order`, etc.).
+
+**No validator code changes required.** v1.4's additions are schema-additive: no new severity levels, no new field types the existing Zod model rejects. The vendored `brand.yaml` parses cleanly and all 20 existing tests pass unchanged.
+
+**New rule logic intentionally not implemented in this release.** The 5 new `journey-*` rules are present in the vendored spec metadata but their runtime checks are deferred to a follow-up validator release (likely v0.1.4 or v0.2.0). For now, brand repos containing a `journey/` directory are tolerated (not flagged as unrecognized) but its contents are not validated against the new rules.
+
+Backward-compatible for consumers: existing API surface unchanged. All three real-world brands (next90-brand, gramatr-brand, lean-media-brand) validate clean against v1.4 with zero errors. lean-media-brand now ships a `journey/` directory which the validator silently tolerates.
+
 ## 0.1.2
 
 Sync vendored brand-spec to v1.3.0. v1.3 introduced a third validation severity (`info`) for non-blocking, advisory rules (e.g., quoted-voice callout skipped, drift-detection section recommended) — required validator code changes:
