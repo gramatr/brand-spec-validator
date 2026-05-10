@@ -14,7 +14,7 @@
 
 schema_version: 1
 contract_name: gramatr.brand
-contract_version: 1.5.0
+contract_version: 1.6.1
 
 # -----------------------------------------------------------------------------
 # Cross-cutting conventions
@@ -595,7 +595,30 @@ layers:
   # --- DESIGN TOKENS -----------------------------------------------------
   design:
     required: true
-    description: "Visual system: colors, typography, modes, logo references."
+    description: |
+      Visual system: colors, typography, modes, logo references. Also
+      the home for design specs that don't fit cleanly in
+      `design-tokens.md` (channel-specific specs, photography
+      treatment, and — as of v1.6.1 — iconography conventions).
+
+      (v1.6.1) Optional `design/iconography.md` extends this layer
+      with iconography conventions: which icon set the brand uses,
+      sizing tokens, color treatment, stroke vs fill, spacing, and
+      one-set exceptions. When the brand has custom icons, the
+      optional `design/icons/` directory holds the source files
+      alongside a `_manifest.md` describing each. The iconography
+      file is recommended-not-required; brands without a UI surface
+      or without icon discipline MAY skip it cleanly.
+
+      Decorative-vs-functional distinction. Decorative or gradient
+      "icons" that read as brand imagery (e.g., section-decoration
+      gradient SVGs on a marketing site) belong in
+      `assets/_manifest.md` and are governed by the assets layer.
+      Functional UI icons that participate in the icon system
+      (navigation, actions, status, in-product chrome) belong in
+      `design/iconography.md`. Brands SHOULD document the
+      distinction explicitly when both are present. See validation
+      rule `iconography-decorative-distinction-recommended`.
     files:
       - path: design-tokens.md
         required: true
@@ -689,6 +712,166 @@ layers:
       - path: fonts/
         required: false
         notes: "self-hosted typeface files; license file (e.g., OFL-*.txt) MUST accompany"
+    additional_files:
+      - path: design/iconography.md
+        required: false
+        recommended: true
+        added_in: 1.6.1
+        frontmatter:
+          type:           { type: string,  required: true,  const: iconography }
+          version:        { type: string,  required: false }
+          status:         { type: string,  required: false }
+          last_updated:   { type: string,  required: false, format: date, notes: "YYYY-MM-DD" }
+          confidence:     { type: string,  required: false, enum: [high, medium, low] }
+          icon_set:
+            type: object
+            required: true
+            notes: |
+              The canonical icon set the brand uses. Captures NAME and
+              VERSION so downstream tools (and AI agents) know exactly
+              which library to render against. When the brand uses a
+              custom icon system, set `name: custom` and document the
+              source files under `design/icons/`.
+            properties:
+              name:
+                type: string
+                required: true
+                notes: |
+                  Set name. Common values: `lucide`, `material-symbols`,
+                  `heroicons`, `phosphor`, `tabler`, `feather`, `custom`.
+                  Brands MAY use any value; the field is informational.
+              version:
+                type: string
+                required: false
+                notes: "Set version (e.g., `0.300.0`). Recommended when the upstream library is versioned."
+              variant:
+                type: string
+                required: false
+                notes: "Optional sub-set indicator (e.g., `outlined`, `rounded`, `sharp` for material-symbols)."
+          set_authority:
+            type: string
+            required: false
+            notes: "URL to the canonical source for the icon set (library homepage, registry, or vendor docs)."
+          color_treatment:
+            type: string
+            required: true
+            enum: [monochrome, brand-color, functional, mixed-with-rules]
+            notes: |
+              How icons are colored across the brand.
+              `monochrome` = always one color (typically a neutral).
+              `brand-color` = always a brand primary or accent.
+              `functional` = semantic colors per role (success/warning/
+              danger/info follow design-tokens semantic palette).
+              `mixed-with-rules` = brand uses several treatments;
+              body documents which applies when.
+          stroke_vs_fill:
+            type: string
+            required: false
+            enum: [stroke, fill, mixed]
+            notes: |
+              Whether the brand uses stroke (line) or fill (solid)
+              icons predominantly. `mixed` = brand uses both with
+              documented rules in body.
+          sizing:
+            type: object
+            required: false
+            notes: |
+              Named icon sizes keyed by t-shirt slug (`xs`, `sm`,
+              `md`, `lg`, `xl`, etc.) mapped to design-token names.
+              The sizing tokens themselves MUST be declared in
+              `design-tokens.md` (or, when present, in `ui-tokens/`);
+              this field references them by name. The hex/px value
+              is never redeclared here. See validation rule
+              `iconography-sizing-references-resolve`.
+            properties:
+              xs: { type: string, required: false, notes: "design-token name (e.g., `--icon-size-xs`)" }
+              sm: { type: string, required: false }
+              md: { type: string, required: false }
+              lg: { type: string, required: false }
+              xl: { type: string, required: false }
+          spacing:
+            type: object
+            required: false
+            notes: |
+              Clear-space rules around icons (analogous to wordmark
+              clear-space in `assets/_manifest.md`). Values reference
+              design-tokens by name when possible; numeric pixel
+              values are acceptable when no token applies.
+          exceptions:
+            type: array
+            required: false
+            items:
+              type: object
+              properties:
+                set:       { type: string, required: true,  notes: "exception set name (e.g., `material-symbols`)" }
+                use_case:  { type: string, required: true,  notes: "where the exception applies (e.g., `product-specific actions in app chrome`)" }
+                reason:    { type: string, required: true,  notes: "why the exception is justified" }
+            notes: |
+              Declared exceptions to the one-set rule. Most brands
+              SHOULD use one icon set for consistency; some (e.g.,
+              brands layering a product-specific custom set on top of
+              a general-purpose library) declare exceptions here with
+              a stated reason. The validator does not enforce
+              one-set; the array is documentation-only.
+        body_sections_recommended:
+          - "Icon set choice and rationale"
+          - "Sizing scale"
+          - "Color treatment"
+          - "Stroke vs fill"
+          - "Spacing and clear-space"
+          - "Exceptions (when a second set is allowed)"
+          - "Decorative vs functional (distinction with assets/_manifest.md)"
+          - "How AI agents and downstream tools consume this layer"
+        notes: |
+          (v1.6.1) Iconography conventions for the brand. Recommended
+          for brands with any UI surface (web app, marketing site
+          with iconography, deck templates with icons); MAY be
+          omitted by brands without icon discipline.
+
+          The file documents the FUNCTIONAL/UI icon system. Decorative
+          or gradient icons that read as brand imagery belong in
+          `assets/_manifest.md`. When both are present, this file
+          SHOULD include a "Decorative vs functional" section
+          spelling out which assets fall on which side of the line.
+
+          Sizing tokens are referenced from `design-tokens.md` (or
+          `ui-tokens/` when present), never redeclared. Color
+          tokens are likewise referenced. See validation rules
+          `iconography-sizing-references-resolve` and
+          `iconography-set-resolves`.
+    additional_directories:
+      - path: design/icons/
+        required: false
+        added_in: 1.6.1
+        notes: |
+          (v1.6.1) Source files for custom brand icons. Required only
+          when `design/iconography.md` declares `icon_set.name: custom`
+          (or any other non-public set name that requires the brand to
+          ship its own files). Lives alongside `iconography.md` —
+          keeps icon-system docs and source files together. NOT in
+          `assets/icons/`; the assets layer is for brand imagery
+          (logos, decorative graphics, photography), not iconography
+          system files. See validation rule `iconography-set-resolves`.
+        contents:
+          - path: _manifest.md
+            required: false
+            recommended: true
+            frontmatter:
+              type:         { type: string,  required: true,  const: icon-manifest }
+              version:      { type: string,  required: false }
+              last_updated: { type: string,  required: false, format: date }
+              icons:
+                type: array
+                required: false
+                notes: |
+                  Per-icon manifest entries. Each entry SHOULD
+                  declare `filename`, `category` (e.g., `navigation`,
+                  `action`, `status`), `intended_use` (1 sentence),
+                  and `alt_text_default` (default accessible label
+                  for downstream tools).
+            notes: "Analogous to `assets/_manifest.md` but scoped to the custom icon set."
+          - { glob: "*.svg",      required: false, notes: "preferred — vector source for icons" }
+          - { glob: "*.png|*.jpg", required: false, notes: "raster fallback when SVG is unavailable" }
 
   # --- UI TOKENS (three-layer system) ------------------------------------
   ui_tokens:
@@ -1226,6 +1409,344 @@ layers:
               comparison tables, results tables); general prose tables
               follow design-tokens typography rules.
 
+  # --- IMAGE GENERATION --------------------------------------------------
+  image_generation:
+    required: false
+    recommended: true
+    description: |
+      (v1.6) Conventions governing how AI image-generation tools
+      (Midjourney, DALL-E, Imagen, Stable Diffusion, Flux, and
+      successors) produce on-brand imagery for the brand. Sibling to
+      the prose `prompts/` layer; the schemas diverge enough — visual
+      generation has style anchors, negative prompts, aspect-ratio
+      defaults, people-depiction rules, and provenance concerns that
+      prose prompts do not — that they live in separate top-level
+      layers. A future `video_generation/` layer would sit beside this
+      one as the natural extension when video generators stabilize.
+
+      Reference, don't redeclare. When a brand has a
+      `design/photography-treatment.md` (or any other documented
+      visual baseline), this layer cites that file as the visual
+      anchor rather than restating it. When color overlays use brand
+      colors, this layer references design tokens by name (never hex
+      literals). When brand-overlay rules require clear-space, this
+      layer cites `assets/_manifest.md` rather than duplicating the
+      values. The job of this layer is image-generation-specific
+      guidance: prompt ergonomics, style anchors, negative prompts,
+      composition defaults, people-depiction rules, and provenance.
+
+      Model-agnostic in v1. The layer prescribes brand intent — what
+      the image should look like, what it must never depict — without
+      branching by generator. Per-model variants
+      (e.g., `image-generation/midjourney.md`) MAY be added in a
+      future patch when real divergence in prompt syntax surfaces;
+      v1.6 does not bake that in.
+
+      Recommended, not required. Brands that generate any imagery via
+      AI tools benefit; brands using only stock photography or
+      commissioned shoots MAY skip the layer entirely. When omitted,
+      downstream tooling that consumes image-generation conventions
+      degrades gracefully — agents fall back to design-tokens for
+      color, photography-treatment (when present) for visual
+      direction, and reasonable defaults for everything else.
+
+      Sensitivity. The `people.md` and `provenance.md` files touch
+      real-world ethics — depiction of humans, AI-generated content
+      labeling, jurisdictional regulation. The schema documents the
+      slots; it deliberately does not impose universal answers.
+      Brands declare their own positions.
+    directories:
+      - path: image-generation/
+        contents:
+          - path: _framework.md
+            required: false
+            recommended: true
+            frontmatter:
+              type:         { type: string,  required: true,  const: framework }
+              version:      { type: string,  required: false }
+              status:       { type: string,  required: false }
+              last_updated: { type: string,  required: false, format: date, notes: "YYYY-MM-DD" }
+              confidence:   { type: string,  required: false, enum: [high, medium, low] }
+            body_sections_recommended:
+              - "What this layer covers"
+              - "When to use this layer vs commission a human shoot"
+              - "Relationship to design/photography-treatment.md"
+              - "Relationship to assets/_manifest.md and design-tokens.md"
+              - "How downstream tools (and AI agents) consume this layer"
+            notes: |
+              Discipline-level documentation. The actual rules live in
+              the sibling files; this file documents scope, the
+              boundary with photography-treatment (which governs
+              human-shot photography), and the consumption model for
+              AI agents that pick a generator and assemble a prompt.
+
+          - path: style.md
+            required: false
+            recommended: true
+            frontmatter:
+              type:         { type: string,  required: true,  const: image-generation-style }
+              version:      { type: string,  required: false }
+              status:       { type: string,  required: false }
+              last_updated: { type: string,  required: false, format: date }
+              confidence:   { type: string,  required: false, enum: [high, medium, low] }
+              photography_treatment_ref:
+                type: string
+                required: false
+                notes: |
+                  Path to the brand's `design/photography-treatment.md`
+                  (or other documented visual baseline) when one
+                  exists. This file's style guidance SHOULD be
+                  consistent with that reference; conflicts are a
+                  signal one of the two needs an update. See
+                  validation rule
+                  `image-gen-photography-treatment-link-valid`.
+              aspect_ratios:
+                type: object
+                required: false
+                notes: |
+                  Default aspect ratios per channel slug, e.g.
+                  `{ social-square: "1:1", social-story: "9:16",
+                  hero: "16:9", linkedin-post: "1.91:1" }`.
+                  Channel guides MAY override; this is the brand
+                  default an agent picks when the surface is
+                  ambiguous.
+            body_sections_recommended:
+              - "Visual goal in one paragraph"
+              - "Style anchors (reference images, treatments, eras)"
+              - "Composition defaults (framing, depth of field, perspective)"
+              - "Aspect-ratio defaults by channel"
+              - "Lighting and time-of-day conventions"
+              - "When to deviate from defaults"
+            notes: |
+              Style anchors are the most load-bearing field.
+              Concrete reference images (URLs or paths to a moodboard)
+              outperform abstract adjectives ("editorial," "cinematic")
+              by a wide margin in real prompt outcomes. Brands SHOULD
+              cite specific anchors — film stocks, photographers,
+              illustration eras, named treatments — and pair them
+              with reference image URLs whenever possible. The
+              composition section absorbs what the issue sketch
+              treated as a separate `composition.md`; the two split
+              cleanly only at very high coverage and most brands
+              benefit from a unified style file.
+
+          - path: subject-matter.md
+            required: false
+            recommended: true
+            frontmatter:
+              type:         { type: string,  required: true,  const: image-generation-subjects }
+              version:      { type: string,  required: false }
+              status:       { type: string,  required: false }
+              last_updated: { type: string,  required: false, format: date }
+              themes:
+                type: array
+                required: false
+                items: { type: string }
+                notes: |
+                  Optional machine-readable list of recurring themes
+                  the brand depicts (e.g., `agriculture`,
+                  `rural-landscape`, `working-equipment`). Free-form
+                  body prose remains the canonical guidance; this
+                  array is a hint for AI agents picking subjects from
+                  a controlled set.
+              forbidden_themes:
+                type: array
+                required: false
+                items: { type: string }
+                notes: |
+                  Optional machine-readable list of themes the brand
+                  never depicts (e.g., `urban-tech-stock`,
+                  `server-rooms`, `team-around-laptop`). Validators
+                  MAY warn if generated-image metadata or prompt
+                  history references a forbidden theme.
+            body_sections_recommended:
+              - "What the brand depicts"
+              - "What the brand never depicts"
+              - "Subject treatment by channel (when it varies)"
+              - "Working hypothesis vs canonical (when in flux)"
+            notes: |
+              Subject-matter guidance is part rule, part editorial.
+              Brands SHOULD lead with the canonical themes (what TO
+              depict) and pair them with the negative-space themes
+              (what NEVER to depict). When the brand's positioning
+              and current image library disagree, the file SHOULD say
+              so explicitly — see lean-media-brand's
+              `design/photography-treatment.md` "Working direction"
+              section for the canonical pattern.
+
+          - path: negative-prompts.md
+            required: false
+            recommended: true
+            frontmatter:
+              type:         { type: string,  required: true,  const: image-generation-negative-prompts }
+              version:      { type: string,  required: false }
+              status:       { type: string,  required: false }
+              last_updated: { type: string,  required: false, format: date }
+              universal_negatives:
+                type: array
+                required: false
+                items: { type: string }
+                notes: |
+                  Optional list of negative-prompt fragments the
+                  brand always appends (e.g., `warped hands`,
+                  `extra fingers`, `text artifacts`,
+                  `celebrity likeness`, `off-brand color`). AI
+                  agents SHOULD include these in every generation
+                  request unless the brand declares an exception.
+            body_sections_recommended:
+              - "Universal negatives (always appended)"
+              - "Common AI failure modes the brand excludes"
+              - "Style negatives (what we are NOT)"
+              - "Per-channel negatives (when applicable)"
+            notes: |
+              Negative prompts are the inverse frame of subject-matter
+              and style — kept as a separate file because the
+              authoring mode is different (a checklist of failure
+              modes, not narrative guidance) and because AI agents
+              consume the universal-negatives array directly without
+              reading the body.
+
+          - path: people.md
+            required: false
+            recommended: true
+            frontmatter:
+              type:         { type: string,  required: true,  const: image-generation-people }
+              version:      { type: string,  required: false }
+              status:       { type: string,  required: false }
+              last_updated: { type: string,  required: false, format: date }
+              age_range:
+                type: string
+                required: false
+                notes: |
+                  When the brand declares people-depiction rules,
+                  age_range SHOULD be present (e.g., `25-65`,
+                  `working-age adults`). Free-form string; not
+                  enum-constrained because brand needs vary.
+              diversity_intent:
+                type: string
+                required: false
+                notes: |
+                  Brand's stated intent for diversity in generated
+                  imagery. Free-form because a one-line enum cannot
+                  capture brand-specific positions; common patterns
+                  include `reflect-customer-base`,
+                  `reflect-geography-served`, `intentionally-diverse`.
+              forbidden_likenesses:
+                type: array
+                required: false
+                items: { type: string }
+                notes: |
+                  Categories of likeness the brand never generates
+                  (e.g., `celebrity`, `politician`,
+                  `competitor-employee`, `named-customer-without-consent`).
+                  Universal-likeness exclusions belong in
+                  negative-prompts.md universal_negatives; this field
+                  captures brand-specific exclusions.
+            body_sections_recommended:
+              - "When the brand depicts people at all"
+              - "Age range and life-stage conventions"
+              - "Diversity intent"
+              - "Attire, setting, and activity conventions"
+              - "Forbidden likenesses (categories and named individuals)"
+              - "Consent and release conventions"
+            notes: |
+              People depiction is the most ethically loaded slot in
+              this layer. The schema documents the fields; brands
+              decide their own positions. When the file is populated,
+              the validation rule
+              `image-gen-people-required-fields-when-present` warns
+              if `age_range`, `diversity_intent`, and
+              `forbidden_likenesses` are all absent (the file exists
+              but says nothing actionable). Brands that decide NOT to
+              generate people imagery SHOULD say so explicitly in the
+              body and MAY omit the structured fields.
+
+          - path: brand-overlays.md
+            required: false
+            recommended: false
+            frontmatter:
+              type:         { type: string,  required: true,  const: image-generation-overlays }
+              version:      { type: string,  required: false }
+              status:       { type: string,  required: false }
+              last_updated: { type: string,  required: false, format: date }
+              assets_manifest_ref:
+                type: string
+                required: false
+                notes: |
+                  Path to `assets/_manifest.md` when the brand uses
+                  logo overlays on generated imagery. Clear-space and
+                  minimum-size rules live in the manifest; this file
+                  references them rather than duplicating. See
+                  validation rule
+                  `image-gen-overlay-manifest-link-valid`.
+            body_sections_recommended:
+              - "Logo placement on generated imagery (or never)"
+              - "Watermark conventions"
+              - "Brand color overlays (gradient, tint, post-processing)"
+              - "Attribution text on user-facing imagery"
+              - "References to assets/_manifest.md and design-tokens.md"
+            notes: |
+              Folds two concerns from the original issue sketch
+              (color-treatment.md and brand-overlays.md): both are
+              about post-generation visual treatment that ties the
+              image back to brand assets and tokens. Brands without
+              logo overlays or post-processing on generated imagery
+              MAY omit this file entirely.
+
+          - path: provenance.md
+            required: false
+            recommended: true
+            frontmatter:
+              type:         { type: string,  required: true,  const: image-generation-provenance }
+              version:      { type: string,  required: false }
+              status:       { type: string,  required: false }
+              last_updated: { type: string,  required: false, format: date }
+              required_when_published:
+                type: array
+                required: false
+                items: { type: string }
+                enum_items: [model, prompt, prompt_hash, generation_date, brand_approval_status, generator_account, seed]
+                notes: |
+                  Provenance fields the brand REQUIRES on any
+                  AI-generated image that ships to a public surface.
+                  v1.6 recommends a minimum of `model`, `prompt` (or
+                  `prompt_hash`), `generation_date`, and
+                  `brand_approval_status`; brands MAY require more
+                  (e.g., `seed` for reproducibility,
+                  `generator_account` for audit). See
+                  `image-gen-provenance-required-when-published`.
+              recommended_when_published:
+                type: array
+                required: false
+                items: { type: string }
+                notes: |
+                  Provenance fields the brand recommends but does not
+                  require (e.g., `seed`, `negative_prompt`,
+                  `post_processing_notes`).
+              labeling_convention:
+                type: string
+                required: false
+                notes: |
+                  Brand convention for user-facing labeling of
+                  AI-generated imagery (e.g., `caption-suffix`,
+                  `corner-badge`, `metadata-only`, `none`). Maps to
+                  jurisdictional labeling regulations the brand
+                  chooses to honor.
+            body_sections_recommended:
+              - "What we capture for every AI-generated image"
+              - "What we require before publishing"
+              - "User-facing labeling convention"
+              - "Approval workflow (who signs off, what's tracked)"
+              - "Retention and audit conventions"
+              - "Jurisdictional considerations (when applicable)"
+            notes: |
+              Provenance fields are guidance about a brand's runtime
+              record-keeping, not a schema for the records themselves
+              — this file declares WHAT the brand captures, not
+              WHERE. Downstream tooling (asset DAMs, generation
+              pipelines, brand-approval queues) is the canonical home
+              for the per-image records.
+
   # --- PROOF -------------------------------------------------------------
   proof:
     required: false
@@ -1735,3 +2256,118 @@ validation:
       scope and consumption model are documented. Informational —
       a brand that ships only `data-viz/colors.md` for downstream
       tooling consumption MAY omit the framework file.
+
+  # ---------------------------------------------------------------------
+  # (v1.6) New validation rules — image-generation layer
+  # ---------------------------------------------------------------------
+
+  - id: image-gen-photography-treatment-link-valid
+    severity: warn
+    rule: |
+      (v1.6) When `image-generation/style.md` declares a
+      `photography_treatment_ref:` frontmatter path, the referenced
+      file MUST exist (typically `design/photography-treatment.md`).
+      When a brand has a photography-treatment file but
+      `image-generation/style.md` does NOT reference it, validators
+      SHOULD warn — the two files SHOULD be cross-linked so the
+      visual baseline stays consistent across human-shot and
+      AI-generated imagery.
+
+  - id: image-gen-overlay-manifest-link-valid
+    severity: warn
+    rule: |
+      (v1.6) When `image-generation/brand-overlays.md` declares an
+      `assets_manifest_ref:` frontmatter path, the referenced file
+      MUST exist (typically `assets/_manifest.md`). The intent is
+      reference, not duplication: clear-space rules and minimum-size
+      rules are authoritative in the assets manifest, and the
+      overlays file SHOULD cite them rather than restate them.
+
+  - id: image-gen-design-token-references-resolve
+    severity: error
+    rule: |
+      (v1.6) When `image-generation/brand-overlays.md` references
+      design-token names (token names enclosed in backticks,
+      conventionally prefixed with `--`), each token MUST resolve to
+      a token defined in `design-tokens.md` or, when present, in a
+      file under `ui-tokens/`. The image-generation layer assigns
+      USAGE to existing tokens (e.g., "overlay gradient uses
+      `--brand-primary` to `--brand-secondary`"); it MUST NOT
+      redeclare hex values. Mirrors the v1.5
+      `data-viz-color-tokens-resolve` rule.
+
+  - id: image-gen-people-required-fields-when-present
+    severity: warn
+    rule: |
+      (v1.6) When `image-generation/people.md` exists, it SHOULD
+      declare at least one of `age_range`, `diversity_intent`, or
+      `forbidden_likenesses` in frontmatter, OR explicitly state in
+      the body that the brand does not generate imagery containing
+      people. A populated people.md file with no actionable guidance
+      is a known liability: AI agents fall back to model defaults,
+      which may not reflect brand intent.
+
+  - id: image-gen-provenance-required-when-published
+    severity: info
+    rule: |
+      (v1.6) When `image-generation/provenance.md` declares a
+      `required_when_published:` frontmatter array, downstream asset
+      pipelines and brand-approval queues SHOULD enforce that every
+      AI-generated image reaching a public surface carries those
+      fields. Brand-spec validators (which validate the brand repo,
+      not generated artifacts) treat this as informational against
+      the brand repo itself; pipeline-level enforcement is the
+      consumer's responsibility. Recommended minimum field set per
+      v1.6: `model`, `prompt` (or `prompt_hash`), `generation_date`,
+      `brand_approval_status`.
+
+  - id: image-gen-framework-recommended
+    severity: info
+    rule: |
+      (v1.6) When any file under `image-generation/` exists,
+      `image-generation/_framework.md` SHOULD also exist so the
+      layer's scope and consumption model are documented.
+      Informational — a brand that ships only
+      `image-generation/negative-prompts.md` for runtime consumption
+      MAY omit the framework file.
+
+  - id: iconography-set-resolves
+    severity: info
+    rule: |
+      (v1.6.1) When `design/iconography.md` declares
+      `icon_set.name: custom` (or any value indicating a
+      brand-provided set), the `design/icons/` directory SHOULD
+      exist with at least one icon file and a `_manifest.md`
+      describing the set. When `icon_set.name` references a
+      well-known public library (e.g., `lucide`, `material-symbols`,
+      `heroicons`), no local files are required — the library is
+      the source of truth and downstream tools fetch it from the
+      upstream registry. Informational — brands MAY ship a
+      `_manifest.md` listing of the public-library icons they
+      actually use without shipping source files.
+
+  - id: iconography-sizing-references-resolve
+    severity: warn
+    rule: |
+      (v1.6.1) When `design/iconography.md` declares a `sizing:`
+      frontmatter block, every value MUST be a token name that
+      resolves to a token defined in `design-tokens.md` or, when
+      present, in a file under `ui-tokens/`. The iconography file
+      assigns icon sizes to existing tokens; it MUST NOT redeclare
+      px or rem values. Mirrors the v1.5
+      `data-viz-color-tokens-resolve` rule and the v1.6
+      `image-gen-design-token-references-resolve` rule.
+
+  - id: iconography-decorative-distinction-recommended
+    severity: info
+    rule: |
+      (v1.6.1) When a brand has both functional iconography
+      (`design/iconography.md`) AND decorative or gradient icons
+      documented in `assets/_manifest.md`, the iconography file
+      SHOULD include a "Decorative vs functional" body section
+      that explicitly draws the line. The distinction prevents
+      downstream tools (and AI agents) from treating decorative
+      gradient SVGs as members of the icon system, and from
+      treating functional UI icons as brand imagery.
+      Informational — brands with only one of the two surfaces
+      MAY omit the section.

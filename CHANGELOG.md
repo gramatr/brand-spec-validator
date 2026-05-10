@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.5
+
+Sync vendored brand-spec to v1.6.1. v1.6.1 is a PATCH bump that extends the existing `design/` layer with iconography conventions: a new `templates/empty-brand/design/iconography.md` template, plus 3 new validation rules (`iconography-set-resolves`, `iconography-sizing-references-resolve`, `iconography-decorative-distinction-recommended`).
+
+**No validator code changes required.** v1.6.1 is purely additive within the existing `design/` layer — no new top-level layers, no new severity levels, no new field types the existing Zod model rejects. The vendored `brand.yaml` parses cleanly and all 20 existing tests pass unchanged.
+
+**Note:** This release also rolls forward through v1.6.0 (which introduced a new top-level `image-generation/` layer); no separate v1.6.0 validator sync was published. Layer count reported by the validator therefore increases from 17 to 18 in this release (reflecting the v1.6.0 `image-generation/` layer). The v1.6.1 iconography extensions live inside the existing `design/` layer and do not change the layer count on their own.
+
+**New rule logic intentionally not implemented in this release.** The 3 new `iconography-*` rules and any v1.6.0 `image-generation-*` rules are present in the vendored spec metadata but their runtime checks are deferred to a follow-up validator release. For now, brand repos containing iconography metadata or an `image-generation/` directory are tolerated; their file contents are not validated against the new rules.
+
+Backward-compatible for consumers: existing API surface unchanged. All three real-world brands (next90-brand, gramatr-brand, lean-media-brand) validate clean against v1.6.1 with zero errors.
+
 ## 0.1.4
 
 Sync vendored brand-spec to v1.5.0. v1.5 adds a new top-level `data-viz/` layer (single canonical home for chart palettes, axis behavior, and data-role color assignment), plus 5 new validation rules (`data-viz-color-tokens-resolve`, `data-viz-no-hex-redeclaration`, `data-viz-categorical-distinguishability`, `data-viz-sequential-monotonic`, `data-viz-framework-presence`).
