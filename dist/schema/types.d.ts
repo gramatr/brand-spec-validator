@@ -2137,15 +2137,15 @@ export type Layer = z.infer<typeof LayerSchema>;
 declare const ValidationRuleSchema: z.ZodObject<{
     id: z.ZodString;
     rule: z.ZodString;
-    severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+    severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
 }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
     id: z.ZodString;
     rule: z.ZodString;
-    severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+    severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
 }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
     id: z.ZodString;
     rule: z.ZodString;
-    severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+    severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
 }, z.ZodTypeAny, "passthrough">>;
 export type ValidationRule = z.infer<typeof ValidationRuleSchema>;
 export declare const BrandSpecSchema: z.ZodObject<{
@@ -4029,15 +4029,15 @@ export declare const BrandSpecSchema: z.ZodObject<{
     validation: z.ZodArray<z.ZodObject<{
         id: z.ZodString;
         rule: z.ZodString;
-        severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+        severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
     }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
         id: z.ZodString;
         rule: z.ZodString;
-        severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+        severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
     }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
         id: z.ZodString;
         rule: z.ZodString;
-        severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+        severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
     }, z.ZodTypeAny, "passthrough">>, "many">;
 }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
     schema_version: z.ZodNumber;
@@ -5920,15 +5920,15 @@ export declare const BrandSpecSchema: z.ZodObject<{
     validation: z.ZodArray<z.ZodObject<{
         id: z.ZodString;
         rule: z.ZodString;
-        severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+        severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
     }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
         id: z.ZodString;
         rule: z.ZodString;
-        severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+        severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
     }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
         id: z.ZodString;
         rule: z.ZodString;
-        severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+        severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
     }, z.ZodTypeAny, "passthrough">>, "many">;
 }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
     schema_version: z.ZodNumber;
@@ -7811,15 +7811,15 @@ export declare const BrandSpecSchema: z.ZodObject<{
     validation: z.ZodArray<z.ZodObject<{
         id: z.ZodString;
         rule: z.ZodString;
-        severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+        severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
     }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
         id: z.ZodString;
         rule: z.ZodString;
-        severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+        severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
     }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
         id: z.ZodString;
         rule: z.ZodString;
-        severity: z.ZodOptional<z.ZodEnum<["error", "warn"]>>;
+        severity: z.ZodOptional<z.ZodEnum<["error", "warn", "info"]>>;
     }, z.ZodTypeAny, "passthrough">>, "many">;
 }, z.ZodTypeAny, "passthrough">>;
 export type BrandSpec = z.infer<typeof BrandSpecSchema>;
