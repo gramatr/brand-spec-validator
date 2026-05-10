@@ -1,6 +1,6 @@
 {
   "name": "@gramatr/brand-spec-validator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Reference validator for brand-spec v1.2 — validates a brand repo against gramatr/brand-spec and reports errors, warnings, and freshness signals.",
   "type": "module",
   "main": "./dist/index.js",
