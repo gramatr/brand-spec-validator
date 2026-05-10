@@ -1,0 +1,3 @@
+# Asset Manifest
+
+(empty fixture)
