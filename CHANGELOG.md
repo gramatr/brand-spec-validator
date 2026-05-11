@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.8
+
+**Vendored spec catch-up — v1.14.0 → v1.15.0.** Patch release. No rule-code changes.
+
+**Vendored spec sync.** `vendor/brand-spec/brand.yaml` upgraded from v1.14.0 to **v1.15.0**, picking up the eighth (final) entry of the v1.8 RFC ([gramatr/brand-spec#50](https://github.com/gramatr/brand-spec/issues/50)):
+
+- **v1.15.0** ([gramatr/brand-spec#58](https://github.com/gramatr/brand-spec/pull/58)) — new top-level `conventions.register_baseline_slugs:` block enumerating baseline kebab-case register slugs categorized into 3 axes (audience_area / byline / channel). v1.15.0 ships with 4 slugs across 2 brands: `marketing`, `engineering`, `founder-byline`, `social`. Associated validator rule `register-slug-baseline` (info/warn) is declared in the spec but deferred.
+
+**v1.8 RFC complete.** This vendor sync brings the validator current with all 8 proposals shipped across brand-spec v1.8.0 → v1.15.0 (8 spec releases, 8 corresponding validator vendor refreshes: v0.3.1 → v0.3.8).
+
+**No behavior change.** The registry is data-only at this release. Non-baseline register slugs in brand files continue to validate; they'll surface as info-severity advisories once the validator rule ships in a future release.
+
+**Package metadata.** `package.json.description` updated from "v1.14.0" to "v1.15.0".
+
 ## 0.3.7
 
 **Vendored spec catch-up — v1.13.0 → v1.14.0.** Patch release. No rule-code changes.
