@@ -137,10 +137,10 @@ function walk(nodes, ctx, collectors) {
                 const tbl = node;
                 const rowsRaw = tbl.children;
                 const headerRow = rowsRaw[0];
-                const headers = headerRow
-                    ? headerRow.children.map((c) => nodeToString(c).trim())
-                    : [];
-                const rows = rowsRaw.slice(1).map((r) => r.children.map((c) => ({ text: nodeToString(c).trim() })));
+                const headers = headerRow ? headerRow.children.map((c) => nodeToString(c).trim()) : [];
+                const rows = rowsRaw
+                    .slice(1)
+                    .map((r) => r.children.map((c) => ({ text: nodeToString(c).trim() })));
                 collectors.tables.push({
                     headers,
                     rows,
@@ -256,9 +256,7 @@ function annotateHeadingPaths(inlineValues, codeBlocks, tables, headings) {
         t.headingPath = headingPathAt(t.startLine);
 }
 export async function parseBody(filePath, options = {}) {
-    const body = options.rawBody !== undefined
-        ? options.rawBody
-        : (await readFrontmatter(filePath)).body;
+    const body = options.rawBody !== undefined ? options.rawBody : (await readFrontmatter(filePath)).body;
     return parseBodyString(body, filePath);
 }
 export function parseBodyString(body, filePath) {
@@ -287,11 +285,7 @@ export function parseBodyString(body, filePath) {
         });
     };
     const findInlineValues = (q = {}) => {
-        const types = q.type
-            ? Array.isArray(q.type)
-                ? new Set(q.type)
-                : new Set([q.type])
-            : null;
+        const types = q.type ? (Array.isArray(q.type) ? new Set(q.type) : new Set([q.type])) : null;
         return collectors.inlineValues.filter((v) => {
             if (types && !types.has(v.type))
                 return false;

@@ -10,7 +10,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 import { loadBrandSpec } from './schema/load.js';
 import { IssueCollector } from './result.js';
-import { exists, isFile, isDir, listFiles, walkFiles, globToRegExp, patternToRegExp } from './fs-utils.js';
+import { exists, isFile, isDir, listFiles, walkFiles, globToRegExp, patternToRegExp, } from './fs-utils.js';
 import { readFrontmatter, FrontmatterError } from './frontmatter.js';
 import { validateFrontmatterFields } from './rules/frontmatter-fields.js';
 import { validateCommonFields } from './rules/common-fields.js';
