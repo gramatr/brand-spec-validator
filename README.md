@@ -98,6 +98,7 @@ Categories:
 4. **Required frontmatter fields** present per file type.
 5. **Enum values match** schema (e.g., `status`, `perspective`, `register`, `visibility`, `source_authority.status`).
 6. **Cross-layer rules** from `brand.yaml`'s `validation:` block — voice pattern exclusivity, agent-context priority resolution, source-authority upstream/notes, prompt-validated example presence, ui-tokens layer ordering, ui-tokens depends-on resolution, etc.
+7. **Body-parse-aware rules** (v0.2.0+) — markdown-body content checks: register-inheritance forbidden-term redeclaration, data-viz hex-literal redeclaration, data-viz framework topic coverage, iconography custom-set local artifact resolution. Rules consume a shared per-run cache; files scanned by multiple rules are parsed at most once. See [`src/body-parse/`](./src/body-parse/) for the public API (`parseBody`, `BodyCache`, `ParsedBody`).
 
 ## Development
 

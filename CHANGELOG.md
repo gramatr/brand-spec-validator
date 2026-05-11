@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.2.0
+
+**New subsystem: body-parse.** Validator now parses markdown body content (post-frontmatter) into structured shapes — sections, fenced code blocks, GFM tables, and inline values (hex/rgb/hsl literals, inline code, links, URLs) — under `src/body-parse/`. Built on `unified` + `remark-parse` + `remark-gfm`; per-validator-run cache (`BodyCache`) so files scanned by multiple rules are parsed at most once. Public API:
+
+```ts
+import { parseBody, BodyCache } from '@gramatr/brand-spec-validator';
+const body = await parseBody(filePath);
+body.findInlineValues({ type: 'hex', excludeCode: true });
+body.findSection({ heading: 'What this allows' });
+body.tables[0].headers;
+```
+
+**Why a minor bump (0.2.0) and not a patch (0.1.6).** The public TypeScript API surface is unchanged — `validateBrand()` returns the same `ValidationResult` shape. But validator BEHAVIOR expands materially: 4 previously-deferred rules now actually fire. Brand repos that passed cleanly under v0.1.5 may surface new findings (mostly info-severity advisories). For ingest pipelines that key off `result.errors.length` only, behavior is unchanged for the 3 reference brands; for pipelines that observe warnings/infos, expect new signal. A patch bump would understate the visible change for downstream consumers.
+
+**Rules implemented (4 of 8 deferrals from RFC #11):**
+
+- `register-inheritance-cannot-subtract` (severity: error, brand-spec v1.3) — scans voice-register body for forbidden-term redeclarations under "What this allows" / "permitted" sections; ignores "What does NOT fit" sections and `> Quoted:` callouts.
+- `data-viz-no-hex-redeclaration` (severity: warn, brand-spec v1.5) — scans `data-viz/*.md` body for hex / rgb / hsl literals; exempts literals inside fenced code blocks and `> Quoted:` callouts (illustrative, not authoritative claims).
+- `data-viz-framework-presence` (severity: info, brand-spec v1.5) — when `data-viz/_framework.md` exists, checks that body covers expected topics (scope, consumption model, token-reference convention).
+- `iconography-set-resolves` (severity: info, brand-spec v1.6.1) — when `design/iconography.md` declares a custom `icon_set`, scans `design/icons/` for source files and `_manifest.md`; recognizes well-known public libraries (lucide, material-symbols, heroicons, fontawesome, phosphor, tabler, feather, octicons, bootstrap-icons) and skips the local-files check for them.
+
+**Rules deferred to v0.2.x patches:**
+
+- `data-viz-categorical-distinguishability` (brand-spec v1.5) — needs ΔE color-distance computation; lands when a perceptual color library (e.g., `culori`) is justified.
+- `data-viz-sequential-monotonic` (brand-spec v1.5) — needs perceptual-luminance ordering check; same dependency consideration as distinguishability.
+- `themes-controlled-vocabulary-warn` (brand-spec v1.6, image-gen) — needs a baseline themes vocabulary surface that the spec itself has not yet stabilized.
+- `cross-layer-ref-target-resolves` token sub-rule (brand-spec v1.7) — needs `design-tokens.md` to expose a structured token list. Currently this file is markdown prose; the spec-level v2 gap (machine-readable design-tokens companion) blocks meaningful enforcement. Body-parse can extract token names from prose, but resolution accuracy is bounded by prose quality. Patch will land an opt-in heuristic resolver once the spec settles.
+
+**Tests.** 22 new unit tests across body-parse subsystem (10) and per-rule fixtures (12), covering passing, failing, and code-block/quoted-callout exemption edge cases.
+
+**Real-brand impact (3 brands, env-var configured):** validator output below assumes `BRAND_SPEC_TEST_BRANDS` is set. All 3 brands continue to report 0 errors. One brand picks up 1 new info-severity advisory (data-viz framework topic coverage); the other two are unchanged from v0.1.5 because they do not exercise the body-parse code paths (no `data-viz/`, no custom `icon_set`, no register-inheritance violations).
+
+**Closes:** RFC gramatr/brand-spec-validator#11 (Option B accepted — build the subsystem, implement highest-value rules first).
+
 ## 0.1.5
 
 **Privacy scrub:** removed specific brand identifiers from this public package. Integration tests are now configured via `BRAND_SPEC_TEST_BRANDS` (comma-separated) instead of a hardcoded array. README, code comments, and CHANGELOG entries no longer name specific adopter brands. Operationally identical for users; nothing in this package now reveals which specific brands are being tested against. Note: prior published versions (v0.1.0 – v0.1.4) and git history still contain the historical references; only forward bleed is stopped here.

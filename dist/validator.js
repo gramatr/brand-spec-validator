@@ -15,6 +15,8 @@ import { readFrontmatter, FrontmatterError } from './frontmatter.js';
 import { validateFrontmatterFields } from './rules/frontmatter-fields.js';
 import { validateCommonFields } from './rules/common-fields.js';
 import { validateSourceAuthority } from './rules/source-authority.js';
+import { BodyCache } from './body-parse/index.js';
+import { validateRegisterInheritance, validateDataVizNoHex, validateDataVizFrameworkPresence, validateIconographySetResolves, } from './rules/body/index.js';
 export async function validateBrand(brandPath, options = {}) {
     const spec = await loadBrandSpec({ specPath: options.specPath });
     const collector = new IssueCollector();
@@ -36,6 +38,13 @@ export async function validateBrand(brandPath, options = {}) {
     }
     // ---- Cross-layer rules ---------------------------------------------------
     await runCrossLayerRules(brandPath, spec, collector, visitedFiles, options.freshness ?? true);
+    // ---- Body-parse-aware rules (v0.2.0) -------------------------------------
+    // Shared cache: rules parse the same file at most once per validator run.
+    const bodyCache = new BodyCache();
+    await validateRegisterInheritance(brandPath, bodyCache, collector);
+    await validateDataVizNoHex(brandPath, bodyCache, collector);
+    await validateDataVizFrameworkPresence(brandPath, bodyCache, collector);
+    await validateIconographySetResolves(brandPath, bodyCache, collector);
     // ---- Common-field enums + source_authority on every visited file --------
     for (const f of visitedFiles) {
         validateCommonFields(f.data, f.rel, { spec, collector });

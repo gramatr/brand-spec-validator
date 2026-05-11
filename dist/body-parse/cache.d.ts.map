@@ -1,0 +1,1 @@
+{"version":3,"file":"cache.d.ts","sourceRoot":"","sources":["../../src/body-parse/cache.ts"],"names":[],"mappings":"AAAA;;;;;GAKG;AAEH,OAAO,KAAK,EAAE,UAAU,EAAE,MAAM,YAAY,CAAC;AAG7C,qBAAa,SAAS;IACpB,OAAO,CAAC,KAAK,CAA0C;IAEvD,GAAG,CAAC,QAAQ,EAAE,MAAM,GAAG,OAAO,CAAC,UAAU,CAAC;IAS1C,gEAAgE;IAChE,KAAK,IAAI,IAAI;IAIb,IAAI,IAAI,MAAM;CAGf"}
