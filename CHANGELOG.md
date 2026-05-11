@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.7
+
+**Vendored spec catch-up — v1.13.0 → v1.14.0.** Patch release. No rule-code changes.
+
+**Vendored spec sync.** `vendor/brand-spec/brand.yaml` upgraded from v1.13.0 to **v1.14.0**, picking up the seventh-landed entry of the v1.8 RFC ([gramatr/brand-spec#50](https://github.com/gramatr/brand-spec/issues/50)):
+
+- **v1.14.0** ([gramatr/brand-spec#57](https://github.com/gramatr/brand-spec/pull/57)) — new top-level `conventions.channel_slug_canonicalizations:` block listing known drift forms for messaging channel slugs. v1.14.0 ships with one entry (`onepager → one-pager`). Two associated validator rules are declared in the spec but deferred:
+
+  - `messaging-channel-slug-canonical` (info/warn)
+  - `messaging-channel-filename-matches-slug` (info/warn)
+
+**No behavior change.** The registry is data-only at this release. Drift forms in current brand files continue to validate; they'll surface as info-severity advisories once the validator rules ship in a future release.
+
+**Package metadata.** `package.json.description` updated from "v1.13.0" to "v1.14.0".
+
 ## 0.3.6
 
 **Vendored spec catch-up — v1.12.0 → v1.13.0.** Patch release. **One small code change**: the alias registry in `src/aliases.ts` adds a 4th entry to stay in sync with the spec.
