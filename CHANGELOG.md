@@ -2,6 +2,8 @@
 
 ## 0.2.0
 
+**Note:** package.json version was originally left at 0.1.5 when the v0.2.0 tag was created; corrected in this commit. The v0.2.0 tag is force-re-tagged at the new HEAD post-merge.
+
 **New subsystem: body-parse.** Validator now parses markdown body content (post-frontmatter) into structured shapes — sections, fenced code blocks, GFM tables, and inline values (hex/rgb/hsl literals, inline code, links, URLs) — under `src/body-parse/`. Built on `unified` + `remark-parse` + `remark-gfm`; per-validator-run cache (`BodyCache`) so files scanned by multiple rules are parsed at most once. Public API:
 
 ```ts
