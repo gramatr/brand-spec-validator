@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.3.0
+
+**Catch-up to brand-spec v1.7+ — cross-layer-ref convention recognition.** Closes [#19](https://github.com/gramatr/brand-spec-validator/issues/19); unblocks Phase C of brand-spec epic [gramatr/brand-spec#36](https://github.com/gramatr/brand-spec/issues/36).
+
+**Vendored spec sync.** `vendor/brand-spec/brand.yaml` upgraded from v1.6.1 to **v1.7.4**. The convention block at `conventions.cross_layer_references` now ships in the validator distribution.
+
+**New: alias-map module (`src/aliases.ts`).** A small registry that maps legacy frontmatter field names to their v1.7-canonical (`*_ref` / `*_refs`) counterparts. Frontmatter readers consult the registry so brands using either name validate cleanly. Three aliases registered:
+
+- `priority_layers_refs` ← `priority_layers` (agent-context)
+- `applies_to_refs` ← `applies_to` (voice/registers)
+- `upstream_ref` ← `upstream` (source_authority, nested)
+
+Public API: `FIELD_ALIASES`, `readAliased(data, aliasFor)`, `findAliasByAnyName(name)`, `isLegacyAlias(name)`, `canonicalFor(legacyName)`. The registry is the single source of truth for aliasing — `validator.ts`, `source-authority.ts`, and `frontmatter-fields.ts` all read through it.
+
+**New rules — three v1.7 cross-layer-ref convention rules now actually fire:**
+
+- `cross-layer-ref-target-resolves` (severity: error) — every frontmatter field matching `^[a-z_]+_refs?$` MUST resolve to an existing target. Type inferred from the value's shape: layer name → `layers:` block; URL → well-formedness; token-shape (`--cat-name`) → warn-only per spec; path-with-fragment → file existence (anchor deferred to body-parse); plain string → file path under brand root. Plural fields carry an array, each entry resolved independently. `applies_to_refs` is exempt (channel slugs, validated by separate baseline-slugs rule).
+- `structured-references-kind-valid` (severity: error) — when the optional `references:` frontmatter block is present, every entry MUST declare `type`, `target`, `kind`. `kind` MUST be one of `requires | recommends | cites`; `type` MUST be one of `layer | file | token | path_with_fragment | url | layer-entries`. `entries` paired with non-`layer-entries` `type` warns.
+- `legacy-ref-field-migration-recommended` (severity: info) — when a known legacy field name is observed and the canonical name is absent, an info-severity advisory recommends migration. Never blocks; legacy fields keep validating cleanly per spec backward-compat. Hard deprecation deferred to v2.
+
+**Backward-compat — non-negotiable.** All three reference brands continue to validate with zero errors. Two surface a new info advisory (legacy `priority_layers` / `applies_to` in use); one was already on the canonical names and now validates clean (previously errored under v0.2.x because the validator hard-coded legacy reads).
+
+**Behavior change vs v0.2.x.** Brands MAY rename to canonical without errors (Phase C of brand-spec#36 unblocked). Brands using legacy names see new info-severity advisories (informational only — never blocks CI).
+
+**Tests.** 34 new unit tests across alias module (16), cross-layer-ref-target-resolves (7), structured-references-kind-valid (6), and legacy-ref-field-migration-recommended (5). Real-brand integration tests pass for all three reference brands.
+
 ## 0.2.1
 
 First npm-publishable release. Enables `release.yml` to actually publish to the npm registry on tag push, with provenance attestations enabled (`--provenance` requires GitHub-hosted runner + `id-token: write` — both already in place since validator stays on `ubuntu-latest`). No source or behavior changes vs v0.2.0.

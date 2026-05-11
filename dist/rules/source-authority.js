@@ -6,6 +6,7 @@
  */
 import path from 'node:path';
 import { exists } from '../fs-utils.js';
+import { readAliased } from '../aliases.js';
 function isObject(v) {
     return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
@@ -37,9 +38,10 @@ export async function validateSourceAuthority(data, filePath, ctx) {
     if (!isObject(sa))
         return;
     const status = sa['status'];
-    // upstream required for mirror | historical
+    // upstream required for mirror | historical.
+    // (v1.7) Accept both `upstream` (legacy) and `upstream_ref` (canonical).
     if (status === 'mirror' || status === 'historical') {
-        const upstream = sa['upstream'];
+        const upstream = readAliased(sa, 'upstream_ref').value;
         if (typeof upstream !== 'string' || upstream.trim() === '') {
             ctx.collector.error('source-authority-upstream-required', filePath, `source_authority.status = '${status}' requires source_authority.upstream`);
         }
