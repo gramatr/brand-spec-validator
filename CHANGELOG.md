@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.2
+
+**Vendored spec catch-up — v1.8.0 → v1.9.0.** Patch release. No rule-code changes.
+
+**Vendored spec sync.** `vendor/brand-spec/brand.yaml` upgraded from v1.8.0 to **v1.9.0**, picking up the second-landed entry of the v1.8 RFC ([gramatr/brand-spec#50](https://github.com/gramatr/brand-spec/issues/50)):
+
+- **v1.9.0** ([gramatr/brand-spec#52](https://github.com/gramatr/brand-spec/pull/52)) — declared two cross-layer-reference fields on per-layer schemas that brands already used in practice but weren't enumerated:
+  - `data_viz_refs:` (array, optional) on `messaging/channel-{channel}.md` frontmatter — paths into `data-viz/`.
+  - `design_tokens_ref:` (string, optional) on all 7 `data-viz/*.md` files — path to design-tokens source.
+
+**No behavior change.** Both fields already resolved under the v1.7 `^[a-z_]+_refs?$` convention (rule: `cross-layer-ref-target-resolves`). v1.9.0 elevates them from convention-implicit to schema-explicit; the validator's rule code reads from the regex, not from the per-layer enumeration, so no rule fires differently. The catch-up is purely a documentation/discoverability sync.
+
+**Package metadata.** `package.json.description` updated from "v1.8.0" to "v1.9.0".
+
 ## 0.3.1
 
 **Vendored spec catch-up — v1.7.4 → v1.8.0.** Patch release. No rule-code changes; this release is purely a vendor refresh so the validator's baseline lists and convention declarations match current brand-spec.
