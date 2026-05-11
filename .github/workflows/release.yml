@@ -1,17 +1,22 @@
-# Release workflow stub — disabled until npm publish is configured.
+# Release workflow — publishes @gramatr/brand-spec-validator to npm on tag push.
 #
-# To enable:
-#   1. Add NPM_TOKEN secret in repo settings.
-#   2. Uncomment the `on:` block below and remove the `workflow_dispatch`-only trigger.
-#   3. Push a `vX.Y.Z` tag.
+# Trigger: push a `vX.Y.Z` tag (or run manually via workflow_dispatch).
+# Requires: NPM_TOKEN secret in repo settings (granular automation token,
+# scoped to @gramatr/brand-spec-validator publish only).
+# Provenance: `--provenance` requires GitHub-hosted runner + id-token: write
+# (both in place — runs-on: ubuntu-latest, permissions block below).
 
 name: Release
 
 on:
-  workflow_dispatch:
-  # push:
-  #   tags:
-  #     - 'v*.*.*'
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:  # manual fallback
+
+permissions:
+  contents: read
+  id-token: write  # required for npm provenance attestations
 
 jobs:
   publish:
@@ -26,7 +31,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - run: echo "publish step disabled in v0.1.0; configure NPM_TOKEN to enable"
-      # - run: npm publish --access public
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --provenance

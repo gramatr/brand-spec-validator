@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+First npm-publishable release. Enables `release.yml` to actually publish to the npm registry on tag push, with provenance attestations enabled (`--provenance` requires GitHub-hosted runner + `id-token: write` — both already in place since validator stays on `ubuntu-latest`). No source or behavior changes vs v0.2.0.
+
 ## 0.2.0
 
 **Note:** package.json version was originally left at 0.1.5 when the v0.2.0 tag was created; corrected in this commit. The v0.2.0 tag is force-re-tagged at the new HEAD post-merge.
