@@ -1,12 +1,22 @@
 /**
  * Integration tests against real brand repos. Skipped unless
- * BRAND_SPEC_TEST_BRANDS_DIR is set (default: ../.. relative to this
- * package, since the canonical layout is sibling checkouts).
+ * BRAND_SPEC_TEST_BRANDS_DIR and BRAND_SPEC_TEST_BRANDS are both set.
  *
- * The three brand repos are private and MUST NOT be vendored.
+ * The brand directories under test are PRIVATE and MUST NOT be vendored
+ * here. Configure via environment so this public package never ships
+ * specific brand identifiers.
  *
- * The brand-spec itself is now vendored with this package, so no
- * sibling brand-spec checkout is required.
+ *   BRAND_SPEC_TEST_BRANDS_DIR  — directory containing brand subdirs
+ *                                 (default: ../.. relative to this package)
+ *   BRAND_SPEC_TEST_BRANDS      — comma-separated list of brand directory
+ *                                 names to validate
+ *
+ * Example:
+ *   BRAND_SPEC_TEST_BRANDS_DIR=/path/to/checkouts \
+ *   BRAND_SPEC_TEST_BRANDS=brand-a,brand-b npm test
+ *
+ * The brand-spec itself is vendored with this package, so no sibling
+ * brand-spec checkout is required.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -20,7 +30,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BRANDS_DIR =
   process.env['BRAND_SPEC_TEST_BRANDS_DIR'] ?? path.resolve(__dirname, '..', '..', '..');
 
-const REAL_BRANDS = ['next90-brand', 'gramatr-brand', 'lean-media-brand'];
+const BRANDS_ENV = process.env['BRAND_SPEC_TEST_BRANDS'] ?? '';
+const REAL_BRANDS = BRANDS_ENV
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 async function exists(p: string): Promise<boolean> {
   try {
@@ -32,11 +46,16 @@ async function exists(p: string): Promise<boolean> {
 }
 
 describe('real brand integration', () => {
+  if (REAL_BRANDS.length === 0) {
+    it.skip('no brands configured (set BRAND_SPEC_TEST_BRANDS=name1,name2,...)', () => undefined);
+    return;
+  }
+
   for (const brand of REAL_BRANDS) {
     it(`${brand}: validates with zero errors`, async () => {
       const brandPath = path.join(BRANDS_DIR, brand);
       if (!(await exists(brandPath))) {
-        console.warn(`[skip] ${brandPath} not found; set BRAND_SPEC_TEST_BRANDS_DIR`);
+        console.warn(`[skip] ${brandPath} not found; check BRAND_SPEC_TEST_BRANDS_DIR`);
         return;
       }
       const result = await validateBrand(brandPath);
@@ -47,16 +66,7 @@ describe('real brand integration', () => {
           console.error(`[${brand}] ${e.ruleId} ${e.path}: ${e.message}`);
         }
       }
-      // Known exception: gramatr-brand has a real YAML bug in
-      // data/stats.yaml. Documented in PR — surfaces an issue against
-      // that brand, not a validator defect. Allow that single error
-      // through; fail on anything else.
-      if (brand === 'gramatr-brand') {
-        const nonYaml = result.errors.filter((e) => e.ruleId !== 'data-files-yaml');
-        expect(nonYaml).toEqual([]);
-      } else {
-        expect(result.errors).toEqual([]);
-      }
+      expect(result.errors).toEqual([]);
     });
   }
 });

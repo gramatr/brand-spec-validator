@@ -108,13 +108,15 @@ npm test
 npm run lint
 ```
 
-Integration tests against real brand repos are env-var-gated:
+Integration tests against real brand repos are env-var-gated. Configure two variables — the directory containing brand subdirectories, and the comma-separated list of brand directory names to validate:
 
 ```bash
-BRAND_SPEC_TEST_BRANDS_DIR=/home/me/work npm test
+BRAND_SPEC_TEST_BRANDS_DIR=/home/me/work \
+BRAND_SPEC_TEST_BRANDS=brand-a,brand-b,brand-c \
+  npm test
 ```
 
-When `BRAND_SPEC_TEST_BRANDS_DIR` is set, the integration suite looks for `next90-brand`, `gramatr-brand`, and `lean-media-brand` subdirectories and validates each. They MUST report zero errors — they are the conformance reference.
+Brand subdirectories named in `BRAND_SPEC_TEST_BRANDS` MUST report zero errors against the validator — they are the conformance reference. The brand directories themselves are not vendored with this package; supply paths to local checkouts (or any other brand-spec-conforming repo) at test time.
 
 ## Versioning
 

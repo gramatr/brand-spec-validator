@@ -23,11 +23,11 @@ export function validateFrontmatterFields(
 ): void {
   const isSample = data !== null && data['status'] === 'sample';
 
-  // Fields where missing-required is demoted to warning. Real production
-  // brands (next90, gramatr, lean-media) consistently omit `last_updated`
-  // on `proof/`, `product/`, and `design/` files even though brand.yaml
+  // Fields where missing-required is demoted to warning. Multiple
+  // real-world adopter brands consistently omit `last_updated` on
+  // `proof/`, `product/`, and `design/` files even though brand.yaml
   // marks it required. Treating as a warning keeps the signal without
-  // blocking known-good v1.2 brands. Tracked as v1.3 spec friction.
+  // blocking known-good v1.2 brands. Tracked as spec friction.
   const REQUIRED_BUT_WARN_ONLY = new Set([
     'last_updated', // spec friction — see comment above
     'example_type', // some brands use `content_type` on examples; spec friction
@@ -53,8 +53,8 @@ export function validateFrontmatterFields(
     // Enum check — common fields (status/visibility) handled in
     // common-fields.ts; per-file enums (perspective, register, layer
     // const-as-enum) stay errors. Lenience: `perspective` accepts
-    // `first-person-plural` (used by lean-media-brand voice/registers/social.md);
-    // tracked as v1.3 spec extension candidate.
+    // `first-person-plural` (in use by adopter brands on social-register
+    // voice files); tracked as v1.3 spec extension candidate.
     if (Array.isArray(def['enum']) && !def['enum'].includes(value as never)) {
       const isPerspectiveExtension =
         name === 'perspective' &&
