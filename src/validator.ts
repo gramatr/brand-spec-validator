@@ -18,11 +18,26 @@ import type {
   Layer,
 } from './schema/types.js';
 import { IssueCollector, type ValidationResult } from './result.js';
-import { exists, isFile, isDir, listFiles, walkFiles, globToRegExp, patternToRegExp } from './fs-utils.js';
+import {
+  exists,
+  isFile,
+  isDir,
+  listFiles,
+  walkFiles,
+  globToRegExp,
+  patternToRegExp,
+} from './fs-utils.js';
 import { readFrontmatter, FrontmatterError } from './frontmatter.js';
 import { validateFrontmatterFields } from './rules/frontmatter-fields.js';
 import { validateCommonFields } from './rules/common-fields.js';
 import { validateSourceAuthority } from './rules/source-authority.js';
+import { BodyCache } from './body-parse/index.js';
+import {
+  validateRegisterInheritance,
+  validateDataVizNoHex,
+  validateDataVizFrameworkPresence,
+  validateIconographySetResolves,
+} from './rules/body/index.js';
 
 export interface ValidateOptions {
   /**
@@ -63,6 +78,14 @@ export async function validateBrand(
 
   // ---- Cross-layer rules ---------------------------------------------------
   await runCrossLayerRules(brandPath, spec, collector, visitedFiles, options.freshness ?? true);
+
+  // ---- Body-parse-aware rules (v0.2.0) -------------------------------------
+  // Shared cache: rules parse the same file at most once per validator run.
+  const bodyCache = new BodyCache();
+  await validateRegisterInheritance(brandPath, bodyCache, collector);
+  await validateDataVizNoHex(brandPath, bodyCache, collector);
+  await validateDataVizFrameworkPresence(brandPath, bodyCache, collector);
+  await validateIconographySetResolves(brandPath, bodyCache, collector);
 
   // ---- Common-field enums + source_authority on every visited file --------
   for (const f of visitedFiles) {
@@ -139,11 +162,7 @@ async function validateNamedFile(
   const abs = path.join(brandPath, relPath);
   if (!(await isFile(abs))) {
     if (entry.required) {
-      collector.error(
-        `layer:${layerName}:required-file`,
-        relPath,
-        `required file is missing`,
-      );
+      collector.error(`layer:${layerName}:required-file`, relPath, `required file is missing`);
     }
     // recommended-but-missing: not an error; voice/agent-context handled by cross-layer rules
     return;
@@ -230,11 +249,7 @@ async function validateDirectory(
 
       if (!(await isFile(absPath))) {
         if (entry.required) {
-          collector.error(
-            `layer:${layerName}:required-file`,
-            relPath,
-            `required file is missing`,
-          );
+          collector.error(`layer:${layerName}:required-file`, relPath, `required file is missing`);
         }
         continue;
       }
@@ -467,7 +482,9 @@ async function rulePromptValidatedExamples(
 ): Promise<void> {
   const promptsDir = path.join(brandPath, 'prompts');
   if (!(await isDir(promptsDir))) return;
-  const files = (await listFiles(promptsDir)).filter((f) => f.endsWith('.md') && !f.startsWith('_'));
+  const files = (await listFiles(promptsDir)).filter(
+    (f) => f.endsWith('.md') && !f.startsWith('_'),
+  );
   for (const f of files) {
     const rel = `prompts/${f}`;
     let data: Record<string, unknown> | null = null;
@@ -501,10 +518,7 @@ async function rulePromptValidatedExamples(
   }
 }
 
-async function ruleUiTokensLayerOrder(
-  brandPath: string,
-  collector: IssueCollector,
-): Promise<void> {
+async function ruleUiTokensLayerOrder(brandPath: string, collector: IssueCollector): Promise<void> {
   const dir = path.join(brandPath, 'ui-tokens');
   if (!(await isDir(dir))) return;
   const has = async (n: string) => isFile(path.join(dir, n));
@@ -527,10 +541,7 @@ async function ruleUiTokensLayerOrder(
   }
 }
 
-async function ruleUiTokensDependsOn(
-  brandPath: string,
-  collector: IssueCollector,
-): Promise<void> {
+async function ruleUiTokensDependsOn(brandPath: string, collector: IssueCollector): Promise<void> {
   const dir = path.join(brandPath, 'ui-tokens');
   if (!(await isDir(dir))) return;
   const files = (await listFiles(dir)).filter((f) => f.endsWith('.md'));

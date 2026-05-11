@@ -31,8 +31,7 @@ const BRANDS_DIR =
   process.env['BRAND_SPEC_TEST_BRANDS_DIR'] ?? path.resolve(__dirname, '..', '..', '..');
 
 const BRANDS_ENV = process.env['BRAND_SPEC_TEST_BRANDS'] ?? '';
-const REAL_BRANDS = BRANDS_ENV
-  .split(',')
+const REAL_BRANDS = BRANDS_ENV.split(',')
   .map((s) => s.trim())
   .filter(Boolean);
 
