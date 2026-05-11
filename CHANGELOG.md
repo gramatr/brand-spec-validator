@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.4
+
+**Vendored spec catch-up — v1.10.0 → v1.11.0.** Patch release. No rule-code changes.
+
+**Vendored spec sync.** `vendor/brand-spec/brand.yaml` upgraded from v1.10.0 to **v1.11.0**, picking up the fourth-landed entry of the v1.8 RFC ([gramatr/brand-spec#50](https://github.com/gramatr/brand-spec/issues/50)):
+
+- **v1.11.0** ([gramatr/brand-spec#54](https://github.com/gramatr/brand-spec/pull/54)) — declared `design/visual-system.md` as a recommended-not-required file slot under the design layer. Frontmatter requires `type: visual-system` const; optional `version`, `status`, `last_updated`, `source`. Body-section recommendations included.
+
+**No behavior change.** The file is recommended-not-required. Brands with no `design/visual-system.md` continue to validate. next90-brand's existing `assets/visual-system.md` continues to validate under the spec's permissive default for undeclared paths; the v1.11.0 release adds a soft drift signal (info-severity advisory MAY be emitted on the non-canonical `assets/` path) but no validator rule enforces this yet.
+
+**Package metadata.** `package.json.description` updated from "v1.10.0" to "v1.11.0".
+
 ## 0.3.3
 
 **Vendored spec catch-up — v1.9.0 → v1.10.0.** Patch release. No rule-code changes.
