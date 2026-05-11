@@ -14,7 +14,7 @@
 
 schema_version: 1
 contract_name: gramatr.brand
-contract_version: 1.7.4
+contract_version: 1.8.0
 
 # -----------------------------------------------------------------------------
 # Cross-cutting conventions
@@ -97,7 +97,20 @@ conventions:
           upstream:
             type: string
             required_when: "status in [mirror, historical]"
-            notes: "path or URL to the upstream/canonical source."
+            accepts_aliases: true
+            canonical_name: upstream_ref
+            legacy_names: [upstream]
+            notes: |
+              Path or URL to the upstream/canonical source.
+
+              (v1.7.5) Alias-aware per `conventions.cross_layer_references.backward_compat.field_aliases`.
+              The canonical v1.7 name is `upstream_ref` (singular `*_ref`
+              form). The legacy name `upstream` continues to satisfy
+              `required_when` cleanly; brands MAY use either. Validators
+              MUST treat presence of EITHER name as satisfying the
+              requirement and MAY emit the
+              `legacy-ref-field-migration-recommended` advisory when the
+              legacy form is observed.
           notes:
             type: string
             required_when: "status in [historical, fixture-only]"
@@ -183,13 +196,32 @@ conventions:
       - tiktok
       - youtube
     technical:
+      # (v1.8.0) Expanded to formalize the agent/SDK surface observed in
+      # gramatr-brand/voice/registers/engineering.md and implied by
+      # next90-brand's CLI/messaging channels. The pre-v1.8 entries
+      # (code-comments, agent-prompts, technical-docs, github-issues,
+      # error-messages, cli-output, readmes) remain canonical for their
+      # original meanings — brands MAY use either the broad entry or the
+      # finer-grained refinements listed below.
       - code-comments
-      - agent-prompts
+      - agent-prompts             # broad — see also: agent-system-prompts
+      - agent-system-prompts      # (v1.8.0) system-prompt strings shipped to agent runtimes
       - technical-docs
+      - architecture-docs         # (v1.8.0) ADRs, system-design docs distinct from end-user technical-docs
       - github-issues
-      - error-messages
-      - cli-output
-      - readmes
+      - error-messages            # broad — see also: cli-error-messages, api-responses
+      - cli-output                # broad — see also: cli-help-text, cli-error-messages, status-line
+      - cli-help-text             # (v1.8.0) `--help` / man-page output
+      - cli-error-messages        # (v1.8.0) CLI-surfaced errors specifically
+      - status-line               # (v1.8.0) terminal status-line / prompt-segment text
+      - readmes                   # broad — see also: technical-readmes
+      - technical-readmes         # (v1.8.0) READMEs targeting engineers specifically
+      - eng-standards             # (v1.8.0) internal engineering standards / conventions docs
+      - claude-md                 # (v1.8.0) CLAUDE.md / agent-context project files
+      - mcp-tool-descriptions     # (v1.8.0) MCP tool description strings
+      - intelligence-packet-contract # (v1.8.0) agent intelligence-packet schemas / contract docs
+      - api-responses             # (v1.8.0) HTTP/RPC API response strings (errors, messages, codes)
+      - sdk-output                # (v1.8.0) SDK-surfaced strings (exception messages, log output)
     long_form:
       - blog-posts
       - founder-guest-articles
@@ -343,6 +375,47 @@ conventions:
           assets_manifest_ref: assets/_manifest.md
           priority_layers_refs: [identity, voice, vocabulary]
           forbidden_chart_types_refs: [data-viz/chart-types.md#forbidden]
+
+    # 1a. Exempt fields — name matches `field_name_pattern` but values
+    # are NOT cross-layer references; target-resolution does not apply.
+    exempt_fields:
+      notes: |
+        (v1.7.5) The `field_name_pattern` regex `^[a-z_]+_refs?$` is
+        intentionally broad — it captures any frontmatter field whose
+        name ends in `_ref` or `_refs`. A small number of canonical
+        field names match the regex but carry domain-specific slug
+        values governed by a different convention; their targets do
+        NOT resolve as layer/file/token/url and validators MUST skip
+        the `cross-layer-ref-target-resolves` check for these fields.
+
+        This list is the canonical, declarative home for such
+        exemptions. Validator implementations MUST read it and exempt
+        the listed field names from target resolution. Any future
+        `*_refs` field whose values are slugs (rather than file/layer/
+        token/url targets) belongs here, paired with the convention
+        that owns its value-vocabulary.
+
+        Backstory: surfaced by validator v0.3.0 (brand-spec-validator
+        PR #20) on lean-media-brand — naïve target-resolution against
+        `applies_to_refs` produced 9 false errors (channel slugs like
+        `website`, `linkedin-company-page` do not resolve as files or
+        layers). Encoded validator-side as `NON_RESOLVING_REF_FIELDS`
+        until the spec declared the exemption canonically here.
+      fields:
+        - name: applies_to_refs
+          reason: |
+            Values are channel/context slugs (e.g., `website`,
+            `linkedin-company-page`, `marketing-emails`) — not paths,
+            layers, tokens, or URLs. Target-resolution is meaningless
+            for these values.
+          governed_by: applies_to_baseline_slugs
+          governance_notes: |
+            Slug vocabulary is owned by the v1.3
+            `conventions.applies_to_baseline_slugs` convention, which
+            defines the baseline kebab-case slugs and the warn-on-drift
+            validation. Brands MAY extend the baseline with
+            brand-specific slugs; the v1.3 convention governs both the
+            baseline and the drift-warning behavior.
 
     # 2. Resolvable target types
     reference_value_types:
@@ -508,6 +581,59 @@ conventions:
         major version). v1.7.x and any subsequent minor releases keep
         legacy fields validating cleanly.
 
+      # (v1.7.5) Declarative alias registry consumed by layer schemas.
+      #
+      # Closes #45. Prior to v1.7.5 the layer schemas under `layers:`
+      # below declared the legacy field names (`priority_layers`,
+      # `applies_to`, `upstream`) as `required: true` literally — which
+      # contradicted the v1.7.0 backward-compat promise that brands MAY
+      # use either canonical or legacy names. The validator
+      # (brand-spec-validator v0.3.0) worked around this per-codebase;
+      # this registry makes the spec self-document the alias-aware
+      # required-field semantics so future validators (or ports to other
+      # languages) read the contract correctly off the spec itself.
+      #
+      # Mechanism: each affected schema entry under `layers:` carries
+      # `accepts_aliases: true` and an inline `legacy_names: [...]`
+      # array. The registry below is the single source of truth those
+      # entries cross-reference; validators MAY load this registry as
+      # data and treat any `accepts_aliases: true` schema entry as
+      # satisfied when EITHER the canonical name OR any registered
+      # legacy name is present.
+      #
+      # Shape mirrors the validator's `FieldAlias` interface
+      # (brand-spec-validator/src/aliases.ts) so the two stay
+      # interpretation-identical.
+      field_aliases:
+        notes: |
+          Registry of canonical ↔ legacy field-name pairs that the
+          v1.7 cross-layer-ref convention introduced. Layer schemas
+          under `layers:` reference this registry via
+          `accepts_aliases: true` plus an inline `legacy_names:`
+          array (the inline array repeats the registry data so each
+          schema entry is self-contained when read in isolation;
+          validators MAY treat the registry as authoritative when
+          the two disagree, but the spec aims to keep them in sync).
+        aliases:
+          - canonical: priority_layers_refs
+            legacy: [priority_layers]
+            context: agent_context.frontmatter
+            notes: |
+              Used by `layers.agent_context.files[agent-context.md].frontmatter`.
+              Plural (`*_refs`) — array of layer names.
+          - canonical: applies_to_refs
+            legacy: [applies_to]
+            context: voice_register.frontmatter
+            notes: |
+              Used by `layers.voice.directories[voice/].contents[registers/{slug}.md].frontmatter`.
+              Plural (`*_refs`) — array of channel/context slugs.
+          - canonical: upstream_ref
+            legacy: [upstream]
+            context: source_authority
+            notes: |
+              Used by `conventions.frontmatter.fields.source_authority.properties.upstream`.
+              Singular (`*_ref`) — one path or URL.
+
 # -----------------------------------------------------------------------------
 # Layers
 # -----------------------------------------------------------------------------
@@ -536,7 +662,26 @@ layers:
         frontmatter:
           schema_version:   { type: integer, required: true,  notes: "matches brand-spec schema_version this file targets" }
           summary:          { type: string,  required: true,  notes: "1-paragraph human description of the brand" }
-          priority_layers:  { type: array,   required: true,  items: { type: string }, notes: "ordered list of layers an agent should load first if context is constrained" }
+          priority_layers:
+            type: array
+            required: true
+            items: { type: string }
+            accepts_aliases: true
+            canonical_name: priority_layers_refs
+            legacy_names: [priority_layers]
+            notes: |
+              Ordered list of layers an agent should load first if
+              context is constrained.
+
+              (v1.7.5) Alias-aware per
+              `conventions.cross_layer_references.backward_compat.field_aliases`.
+              The canonical v1.7 name is `priority_layers_refs` (plural
+              `*_refs` form). The legacy name `priority_layers`
+              continues to satisfy `required: true` cleanly; brands
+              MAY use either. Validators MUST treat presence of EITHER
+              name as satisfying the requirement and MAY emit the
+              `legacy-ref-field-migration-recommended` advisory when
+              the legacy form is observed.
         body_sections_recommended:
           - "Voice (one paragraph)"
           - "Top 5 vocabulary do/don't"
@@ -686,6 +831,9 @@ layers:
                 type: array
                 required: true
                 items: { type: string }
+                accepts_aliases: true
+                canonical_name: applies_to_refs
+                legacy_names: [applies_to]
                 notes: |
                   Channels/contexts where this register is canonical
                   (e.g., `[website, blog, marketing-emails]` for
@@ -701,6 +849,16 @@ layers:
                   the baseline list to surface drift like `email` vs
                   `marketing-email` vs `marketing-emails`. Enforcement
                   is convention-only in v1.3; richer taxonomy is v2.
+
+                  (v1.7.5) Alias-aware per
+                  `conventions.cross_layer_references.backward_compat.field_aliases`.
+                  The canonical v1.7 name is `applies_to_refs` (plural
+                  `*_refs` form). The legacy name `applies_to`
+                  continues to satisfy `required: true` cleanly; brands
+                  MAY use either. Validators MUST treat presence of
+                  EITHER name as satisfying the requirement and MAY
+                  emit the `legacy-ref-field-migration-recommended`
+                  advisory when the legacy form is observed.
               default_tone:   { type: string, required: false, notes: "e.g., 'confident-direct'" }
               reading_level:  { type: string, required: false, notes: "e.g., 'professional'" }
               perspective:    { type: string, required: false, enum: [first-person, second-person, third-person] }
