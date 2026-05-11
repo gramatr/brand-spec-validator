@@ -35,6 +35,11 @@ export const FIELD_ALIASES = [
         legacy: ['upstream'],
         context: 'source_authority',
     },
+    {
+        canonical: 'target_persona_ref',
+        legacy: ['target_persona'],
+        context: 'examples',
+    },
 ];
 /**
  * Read a frontmatter field with alias support. Tries the canonical name

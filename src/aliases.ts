@@ -49,6 +49,11 @@ export const FIELD_ALIASES: FieldAlias[] = [
     legacy: ['upstream'],
     context: 'source_authority',
   },
+  {
+    canonical: 'target_persona_ref',
+    legacy: ['target_persona'],
+    context: 'examples',
+  },
 ];
 
 export interface AliasReadResult {
