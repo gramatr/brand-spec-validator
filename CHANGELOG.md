@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.1
+
+**Vendored spec catch-up — v1.7.4 → v1.8.0.** Patch release. No rule-code changes; this release is purely a vendor refresh so the validator's baseline lists and convention declarations match current brand-spec.
+
+**Vendored spec sync.** `vendor/brand-spec/brand.yaml` upgraded from v1.7.4 to **v1.8.0**, picking up three spec releases at once:
+
+- **v1.7.5** (gramatr/brand-spec#45) — declarative alias registry under `conventions.cross_layer_references.backward_compat.field_aliases`. The validator's `src/aliases.ts` registry has matched this shape since v0.3.0; the spec now self-documents the contract.
+- **v1.7.6** (gramatr/brand-spec#46) — `conventions.cross_layer_references.exempt_fields` formally declares `applies_to_refs` as a non-resolving slug-valued field. The validator's hard-coded `NON_RESOLVING_REF_FIELDS` set at `src/rules/v17/cross-layer-ref-target-resolves.ts:48` matches; replacing the hard-coded set with a read from the spec is tracked as a separate follow-up.
+- **v1.8.0** (gramatr/brand-spec#51) — `applies_to_baseline_slugs.technical` expanded by 12 entries covering the agent/SDK surface (`claude-md`, `agent-system-prompts`, `mcp-tool-descriptions`, `intelligence-packet-contract`, `architecture-docs`, `cli-help-text`, `cli-error-messages`, `status-line`, `eng-standards`, `technical-readmes`, `api-responses`, `sdk-output`). The `applies-to-slug-not-in-baseline` advisory reads the baseline from `brand.yaml` at validation time, so these slugs now validate without a warning automatically — no code change.
+
+**Backward compatibility.** Purely additive at the spec layer. Brands validating cleanly against v0.3.0 continue to validate cleanly against v0.3.1; the only behavior change is that 12 previously-warning technical slugs in `gramatr-brand/voice/registers/engineering.md` now validate clean.
+
+**Package metadata.** `package.json.description` updated from "v1.7.4" to "v1.8.0" to reflect the vendored spec version.
+
 ## 0.3.0
 
 **Catch-up to brand-spec v1.7+ — cross-layer-ref convention recognition.** Closes [#19](https://github.com/gramatr/brand-spec-validator/issues/19); unblocks Phase C of brand-spec epic [gramatr/brand-spec#36](https://github.com/gramatr/brand-spec/issues/36).
