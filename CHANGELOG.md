@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.3
+
+**Vendored spec catch-up — v1.9.0 → v1.10.0.** Patch release. No rule-code changes.
+
+**Vendored spec sync.** `vendor/brand-spec/brand.yaml` upgraded from v1.9.0 to **v1.10.0**, picking up the third-landed entry of the v1.8 RFC ([gramatr/brand-spec#50](https://github.com/gramatr/brand-spec/issues/50)):
+
+- **v1.10.0** ([gramatr/brand-spec#53](https://github.com/gramatr/brand-spec/pull/53)) — declared `audience_taxonomy:` and `role_taxonomy:` (both optional arrays) on `personas/_framework.md` frontmatter. Brands MAY now declare their persona matrix axes machine-readably; until v1.10 the matrix was prose-only.
+
+**No behavior change.** Both fields are optional with no current validator rules enforcing membership. The fields validate per the cross-cutting frontmatter rules (additional optional arrays are accepted). Specific membership-check rules (`persona-role-in-taxonomy`, `persona-audience-in-taxonomy`) are deferred to a future validator release per the spec's design notes.
+
+**Package metadata.** `package.json.description` updated from "v1.9.0" to "v1.10.0".
+
 ## 0.3.2
 
 **Vendored spec catch-up — v1.8.0 → v1.9.0.** Patch release. No rule-code changes.
