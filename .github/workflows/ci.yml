@@ -23,3 +23,20 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npm test
+
+  dist-sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify dist/ is in sync with src/
+        run: |
+          npm run build
+          if ! git diff --exit-code dist/; then
+            echo "::error::dist/ is out of sync with src/ — run 'npm run build && git add dist/' and commit"
+            exit 1
+          fi
