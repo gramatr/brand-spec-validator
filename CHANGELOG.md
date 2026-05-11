@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.5
+
+**Vendored spec catch-up — v1.11.0 → v1.12.0.** Patch release. No rule-code changes.
+
+**Vendored spec sync.** `vendor/brand-spec/brand.yaml` upgraded from v1.11.0 to **v1.12.0**, picking up the fifth-landed entry of the v1.8 RFC ([gramatr/brand-spec#50](https://github.com/gramatr/brand-spec/issues/50)):
+
+- **v1.12.0** ([gramatr/brand-spec#55](https://github.com/gramatr/brand-spec/pull/55)) — new top-level `conventions.prompt_sub_variant_fields` block sanctioning two sub-variant discriminator patterns on `prompts/{content-type}.md` files: `<content_type>_type:` (with prefix-match constraint) and literal `format:`. Per-layer schema gains literal `format:` as optional string.
+
+**No behavior change.** Both patterns already validated under permissive defaults (undeclared frontmatter fields are accepted). The v1.12.0 convention block makes the patterns discoverable but does not enforce them. The future validator rule `prompt-sub-variant-field-prefix-matches-content-type` (enforce that `<content_type>_type:` prefix equals `content_type:` value) is deferred to a later release.
+
+**Package metadata.** `package.json.description` updated from "v1.11.0" to "v1.12.0".
+
 ## 0.3.4
 
 **Vendored spec catch-up — v1.10.0 → v1.11.0.** Patch release. No rule-code changes.
