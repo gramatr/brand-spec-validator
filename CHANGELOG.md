@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.3.6
+
+**Vendored spec catch-up — v1.12.0 → v1.13.0.** Patch release. **One small code change**: the alias registry in `src/aliases.ts` adds a 4th entry to stay in sync with the spec.
+
+**Vendored spec sync.** `vendor/brand-spec/brand.yaml` upgraded from v1.12.0 to **v1.13.0**, picking up the sixth-landed entry of the v1.8 RFC ([gramatr/brand-spec#50](https://github.com/gramatr/brand-spec/issues/50)):
+
+- **v1.13.0** ([gramatr/brand-spec#56](https://github.com/gramatr/brand-spec/pull/56)) — declared `target_company:` (free-form string, optional) and `target_persona:` alias-aware block (`canonical_name: target_persona_ref`, `legacy_names: [target_persona]`) on examples frontmatter. Added 4th entry to `conventions.cross_layer_references.backward_compat.field_aliases`.
+
+**Code change: `src/aliases.ts` `FIELD_ALIASES`.** Added 4th entry mirroring the spec registry:
+
+```typescript
+{
+  canonical: 'target_persona_ref',
+  legacy: ['target_persona'],
+  context: 'examples',
+}
+```
+
+The registry now contains 4 aliases (was 3): `priority_layers_refs`, `applies_to_refs`, `upstream_ref`, `target_persona_ref`. Per the established design, the validator's `FIELD_ALIASES` is the runtime mirror of the spec's `field_aliases` registry; keeping them in sync is mechanical, not a semantic change.
+
+**No new validator behavior.** The `cross-layer-ref-target-resolves` rule already handles `*_ref` resolution under the v1.7 `^[a-z_]+_refs?$` regex — `target_persona_ref:` becomes a new instance of an existing rule. The legacy free-form `target_persona:` does NOT match the regex (no `_ref` / `_refs` suffix), so it's not subject to resolution and continues to validate as a plain string.
+
+**Package metadata.** `package.json.description` updated from "v1.12.0" to "v1.13.0".
+
 ## 0.3.5
 
 **Vendored spec catch-up — v1.11.0 → v1.12.0.** Patch release. No rule-code changes.

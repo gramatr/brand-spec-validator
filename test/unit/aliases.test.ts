@@ -13,9 +13,14 @@ import {
 } from '../../src/aliases.js';
 
 describe('FIELD_ALIASES registry', () => {
-  it('declares the three known v1.7 aliases', () => {
+  it('declares the four known v1.7+ aliases', () => {
     const canonicals = FIELD_ALIASES.map((a) => a.canonical).sort();
-    expect(canonicals).toEqual(['applies_to_refs', 'priority_layers_refs', 'upstream_ref']);
+    expect(canonicals).toEqual([
+      'applies_to_refs',
+      'priority_layers_refs',
+      'target_persona_ref',
+      'upstream_ref',
+    ]);
   });
 
   it('every alias declares at least one legacy name', () => {
