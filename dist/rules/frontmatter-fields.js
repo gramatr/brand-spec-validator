@@ -3,6 +3,7 @@
  * and `const:` exact matches declared in `brand.yaml` for a given file
  * type.
  */
+import { findAliasByAnyName } from '../aliases.js';
 /**
  * Validate a parsed frontmatter object against the field map declared in
  * the spec. Reports per-field errors via the collector.
@@ -22,7 +23,24 @@ export function validateFrontmatterFields(data, fields, filePath, ruleId, collec
         'example_type', // some brands use `content_type` on examples; spec friction
     ]);
     for (const [name, def] of Object.entries(fields)) {
-        const present = data !== null && Object.prototype.hasOwnProperty.call(data, name);
+        let present = data !== null && Object.prototype.hasOwnProperty.call(data, name);
+        // (v1.7) Alias-aware required-field check. The spec's layer blocks
+        // still declare legacy field names (e.g., `priority_layers`,
+        // `applies_to`) as required, but the v1.7 cross-layer-ref convention
+        // accepts the canonical `*_refs` form too. If a known alias is in
+        // play and EITHER the canonical OR any legacy name is present, the
+        // requirement is satisfied. The dedicated info-severity advisory
+        // for legacy usage is emitted by `legacy-ref-field-migration-recommended`.
+        if (!present && data !== null) {
+            const alias = findAliasByAnyName(name);
+            if (alias) {
+                const canonicalPresent = Object.prototype.hasOwnProperty.call(data, alias.canonical);
+                const anyLegacyPresent = alias.legacy.some((l) => Object.prototype.hasOwnProperty.call(data, l));
+                if (canonicalPresent || anyLegacyPresent) {
+                    present = true;
+                }
+            }
+        }
         if (def['required'] === true && !present) {
             if (REQUIRED_BUT_WARN_ONLY.has(name)) {
                 collector.warn(ruleId, filePath, `recommended frontmatter field missing: ${name} (spec marks required; demoted to warning per known v1.2 brand patterns)`);
@@ -34,7 +52,23 @@ export function validateFrontmatterFields(data, fields, filePath, ruleId, collec
         }
         if (!present || isSample)
             continue;
-        const value = data[name];
+        // Resolve value with alias-awareness: if the spec's legacy name
+        // isn't literally present but a registered canonical/legacy alias
+        // is, read from the alias. This prevents downstream enum/type
+        // checks from misfiring against `undefined`.
+        let value = data[name];
+        if (value === undefined && data !== null) {
+            const alias = findAliasByAnyName(name);
+            if (alias) {
+                const ordered = [alias.canonical, ...alias.legacy];
+                for (const candidate of ordered) {
+                    if (Object.prototype.hasOwnProperty.call(data, candidate)) {
+                        value = data[candidate];
+                        break;
+                    }
+                }
+            }
+        }
         // Enum check — common fields (status/visibility) handled in
         // common-fields.ts; per-file enums (perspective, register, layer
         // const-as-enum) stay errors. Lenience: `perspective` accepts

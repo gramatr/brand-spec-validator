@@ -38,6 +38,12 @@ import {
   validateDataVizFrameworkPresence,
   validateIconographySetResolves,
 } from './rules/body/index.js';
+import {
+  validateCrossLayerRefTargets,
+  validateStructuredReferencesKind,
+  validateLegacyRefFieldMigration,
+} from './rules/v17/index.js';
+import { readAliased } from './aliases.js';
 
 export interface ValidateOptions {
   /**
@@ -86,6 +92,11 @@ export async function validateBrand(
   await validateDataVizNoHex(brandPath, bodyCache, collector);
   await validateDataVizFrameworkPresence(brandPath, bodyCache, collector);
   await validateIconographySetResolves(brandPath, bodyCache, collector);
+
+  // ---- v1.7 cross-layer-ref convention rules -------------------------------
+  await validateCrossLayerRefTargets(brandPath, spec, collector);
+  await validateStructuredReferencesKind(brandPath, collector);
+  await validateLegacyRefFieldMigration(brandPath, collector);
 
   // ---- Common-field enums + source_authority on every visited file --------
   for (const f of visitedFiles) {
@@ -432,11 +443,14 @@ async function ruleVoiceMultiRegisterIndex(
           `register file must have frontmatter.register populated`,
         );
       }
-      if (!data || !Array.isArray(data['applies_to']) || data['applies_to'].length === 0) {
+      // (v1.7) Read via alias map so both `applies_to` (legacy) and
+      // `applies_to_refs` (canonical) satisfy the requirement.
+      const appliesTo = data ? readAliased(data, 'applies_to_refs').value : undefined;
+      if (!Array.isArray(appliesTo) || appliesTo.length === 0) {
         collector.error(
           'voice-multi-register-index',
           rel,
-          `register file must have frontmatter.applies_to populated (non-empty array)`,
+          `register file must have frontmatter.applies_to_refs (or legacy applies_to) populated (non-empty array)`,
         );
       }
     } catch (err) {
@@ -458,7 +472,9 @@ async function ruleAgentContextPriorityLayers(
     const parsed = await readFrontmatter(filePath);
     const data = parsed.data;
     if (!data) return;
-    const layers = data['priority_layers'];
+    // (v1.7) Read via alias map so both `priority_layers` (legacy) and
+    // `priority_layers_refs` (canonical) are honored.
+    const layers = readAliased(data, 'priority_layers_refs').value;
     if (!Array.isArray(layers)) return;
     const validLayers = new Set(Object.keys(spec.layers));
     for (const l of layers) {
