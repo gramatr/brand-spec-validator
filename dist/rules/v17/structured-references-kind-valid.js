@@ -48,8 +48,7 @@ function checkEntry(entryKey, entry, filePath, collector) {
         collector.error(RULE_ID, filePath, `references.${entryKey}.type = ${JSON.stringify(type)} is not in [${VALID_TYPES.join(', ')}]`);
     }
     // entries only meaningful for layer-entries
-    if (Object.prototype.hasOwnProperty.call(entry, 'entries') &&
-        type !== 'layer-entries') {
+    if (Object.prototype.hasOwnProperty.call(entry, 'entries') && type !== 'layer-entries') {
         collector.warn(RULE_ID, filePath, `references.${entryKey}.entries is only meaningful when type: layer-entries (got type: ${JSON.stringify(type)})`);
     }
 }
