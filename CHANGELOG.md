@@ -1,4 +1,24 @@
 # Changelog
+## [0.5.0] — 2026-05-12
+
+Minor release. Implements [gramatr/brand-spec#64](https://github.com/gramatr/brand-spec/pull/64) (v1.17.0): folder pattern for `design-tokens`.
+
+### New rules
+
+- **`design-tokens-pattern-exclusive`** (error) — fires when both `design-tokens.md` and `design-tokens/` are present.
+- **`design-tokens-required`** (error) — fires when neither form exists.
+- **`design-tokens-folder-index`** (error) — when the folder form is used, the folder MUST contain exactly one of `README.md` or `_framework.md` as canonical entry point.
+
+Implementation reuses the generic `ruleLayerPatternExclusive` / `ruleLayerFolderIndex` helpers introduced in v0.4.0 — three new wired-up rule invocations, no new helper code.
+
+### Vendored spec
+
+Refreshed `vendor/brand-spec/brand.yaml` to v1.17.0 (`contract_version: 1.17.0`).
+
+### Tests
+
+New fixture `invalid-design-tokens-both/` + corresponding pattern-exclusive test. 76 unit tests passing.
+
 
 ## [0.4.0] — 2026-05-12
 

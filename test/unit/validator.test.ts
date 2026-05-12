@@ -61,6 +61,12 @@ describe('invalid fixtures — each rule', () => {
     expect(ids).toContain('vocabulary-pattern-exclusive');
   });
 
+  it('design-tokens.md AND design-tokens/ both present → design-tokens-pattern-exclusive error', async () => {
+    const r = await run('invalid-design-tokens-both');
+    const ids = r.errors.map((e) => e.ruleId);
+    expect(ids).toContain('design-tokens-pattern-exclusive');
+  });
+
   it('prompt validated:true with no examples → prompt-example-when-validated error', async () => {
     const r = await run('invalid-prompt-validated');
     const ids = r.errors.map((e) => e.ruleId);
