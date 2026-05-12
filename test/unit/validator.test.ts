@@ -28,10 +28,13 @@ describe('valid fixtures', () => {
 });
 
 describe('invalid fixtures — each rule', () => {
-  it('missing identity.md → identity required error', async () => {
+  it('missing identity.md AND identity/ → identity-required error', async () => {
+    // (v1.16) identity layer can be satisfied by either form; missing both
+    // fires the new identity-required rule (replaces the v1.15
+    // layer:identity:required-file path which only matched the single-file form).
     const r = await run('invalid-missing-required');
     const ids = r.errors.map((e) => e.ruleId);
-    expect(ids).toContain('layer:identity:required-file');
+    expect(ids).toContain('identity-required');
   });
 
   it('malformed frontmatter → frontmatter-parses error', async () => {
@@ -44,6 +47,18 @@ describe('invalid fixtures — each rule', () => {
     const r = await run('invalid-voice-both');
     const ids = r.errors.map((e) => e.ruleId);
     expect(ids).toContain('voice-pattern-exclusive');
+  });
+
+  it('identity.md AND identity/ both present → identity-pattern-exclusive error', async () => {
+    const r = await run('invalid-identity-both');
+    const ids = r.errors.map((e) => e.ruleId);
+    expect(ids).toContain('identity-pattern-exclusive');
+  });
+
+  it('vocabulary.md AND vocabulary/ both present → vocabulary-pattern-exclusive error', async () => {
+    const r = await run('invalid-vocabulary-both');
+    const ids = r.errors.map((e) => e.ruleId);
+    expect(ids).toContain('vocabulary-pattern-exclusive');
   });
 
   it('prompt validated:true with no examples → prompt-example-when-validated error', async () => {
