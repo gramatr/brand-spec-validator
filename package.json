@@ -1,7 +1,7 @@
 {
   "name": "@gramatr/brand-spec-validator",
-  "version": "0.3.8",
-  "description": "Reference validator for brand-spec v1.15.0 — validates a brand repo against gramatr/brand-spec and reports errors, warnings, and info-severity advisories.",
+  "version": "0.4.0",
+  "description": "Reference validator for brand-spec v1.16.0 \u2014 validates a brand repo against gramatr/brand-spec and reports errors, warnings, and info-severity advisories.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -44,7 +44,7 @@
     "conformance",
     "ai-agent"
   ],
-  "author": "grāmatr",
+  "author": "gr\u0101matr",
   "license": "MIT",
   "repository": {
     "type": "git",

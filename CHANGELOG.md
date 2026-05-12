@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.4.0] — 2026-05-12
+
+Minor release. Implements the v1.16.0 spec changes from
+[gramatr/brand-spec#61](https://github.com/gramatr/brand-spec/pull/61):
+universalizes the dual-pattern (single-file OR folder, mutually
+exclusive) across `identity`, `vocabulary`, and `agent_context` layers.
+
+### New rules
+
+- **`identity-pattern-exclusive`** (error) — fires when both
+  `identity.md` and `identity/` are present.
+- **`identity-required`** (error) — fires when neither
+  `identity.md` nor a populated `identity/` folder exists.
+- **`vocabulary-pattern-exclusive`** (error) — same shape as
+  identity, for `vocabulary.md` vs. `vocabulary/`.
+- **`vocabulary-required`** (error) — neither form present.
+- **`agent-context-pattern-exclusive`** (error) — same shape, for
+  `agent-context.md` vs. `agent-context/`. (No paired `*-required`
+  rule; agent-context is recommended-not-required at the layer level.)
+- **`identity-folder-index`** / **`vocabulary-folder-index`** /
+  **`agent-context-folder-index`** (error) — when the folder form is
+  used, the folder MUST contain exactly one of `README.md` or
+  `_framework.md` as canonical entry point.
+
+### Behavior changes
+
+- `ruleAgentContextPriorityLayers` now resolves agent-context content
+  from either `agent-context.md` (legacy) or `agent-context/README.md` /
+  `agent-context/_framework.md` (v1.16 folder form). The
+  `priority_layers` / `priority_layers_refs` contract is enforced
+  identically against whichever source exists.
+- A brand whose `identity.md` is absent now fires `identity-required`
+  (the new rule) instead of the generic `layer:identity:required-file`.
+  Existing brands continue to validate unchanged; this is a rename for
+  the never-present-anywhere case only.
+
+### Vendored spec
+
+Refreshed `vendor/brand-spec/brand.yaml` to v1.16.0
+(`contract_version: 1.16.0`).
+
 ## 0.3.8
 
 **Vendored spec catch-up — v1.14.0 → v1.15.0.** Patch release. No rule-code changes.

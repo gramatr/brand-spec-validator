@@ -356,6 +356,51 @@ async function runCrossLayerRules(
 ): Promise<void> {
   await ruleVoiceExclusive(brandPath, collector);
   await ruleVoiceMultiRegisterIndex(brandPath, collector);
+  await ruleLayerPatternExclusive(
+    brandPath,
+    'identity.md',
+    'identity',
+    'identity-pattern-exclusive',
+    /* layerRequired */ true,
+    'identity-required',
+    collector,
+  );
+  await ruleLayerPatternExclusive(
+    brandPath,
+    'vocabulary.md',
+    'vocabulary',
+    'vocabulary-pattern-exclusive',
+    /* layerRequired */ true,
+    'vocabulary-required',
+    collector,
+  );
+  await ruleLayerPatternExclusive(
+    brandPath,
+    'agent-context.md',
+    'agent-context',
+    'agent-context-pattern-exclusive',
+    /* layerRequired */ false,
+    'agent-context-required',
+    collector,
+  );
+  await ruleLayerFolderIndex(
+    brandPath,
+    'identity',
+    'identity-folder-index',
+    collector,
+  );
+  await ruleLayerFolderIndex(
+    brandPath,
+    'vocabulary',
+    'vocabulary-folder-index',
+    collector,
+  );
+  await ruleLayerFolderIndex(
+    brandPath,
+    'agent-context',
+    'agent-context-folder-index',
+    collector,
+  );
   await ruleAgentContextPriorityLayers(brandPath, spec, collector);
   await rulePromptValidatedExamples(brandPath, collector);
   await ruleUiTokensLayerOrder(brandPath, collector);
@@ -364,6 +409,79 @@ async function runCrossLayerRules(
   if (freshness) {
     await ruleFreshness(brandPath, 'proof', 180, 'proof-freshness-warn', collector);
     await ruleFreshness(brandPath, 'design', 90, 'design-specs-freshness-warn', collector);
+  }
+}
+
+/**
+ * (v1.16) Generic pattern-exclusive rule for layers that support both
+ * single-file and folder forms (identity, vocabulary, agent_context).
+ * Mirrors `ruleVoiceExclusive` for voice. Fires `error` when both forms
+ * are present; silent when exactly one (or neither) is present —
+ * layer-required checks are owned elsewhere.
+ */
+async function ruleLayerPatternExclusive(
+  brandPath: string,
+  fileName: string,
+  dirName: string,
+  exclusiveRuleId: string,
+  layerRequired: boolean,
+  requiredRuleId: string,
+  collector: IssueCollector,
+): Promise<void> {
+  const filePath = path.join(brandPath, fileName);
+  const dirPath = path.join(brandPath, dirName);
+  const hasFile = await isFile(filePath);
+  const hasDir = await isDir(dirPath);
+  if (layerRequired && !hasFile && !hasDir) {
+    collector.error(
+      requiredRuleId,
+      '',
+      `${dirName} layer missing: provide either ${fileName} OR a ${dirName}/ directory with a canonical entry point (README.md or _framework.md)`,
+    );
+    return;
+  }
+  if (hasFile && hasDir) {
+    collector.error(
+      exclusiveRuleId,
+      '',
+      `both ${fileName} and ${dirName}/ directory present; brand must use exactly one ${dirName} pattern`,
+    );
+  }
+}
+
+/**
+ * (v1.16) Folder-index check for layers using the folder pattern.
+ * When `<layer>/` exists, the folder MUST contain exactly one of
+ * `README.md` or `_framework.md` as the canonical entry point.
+ * Mirrors the voice multi-register index check shape, scoped to the
+ * folder-index requirement only (sub-file shape is intentionally
+ * not enforced for identity/vocabulary/agent_context — those layers
+ * leave sub-files brand-defined per spec v1.16).
+ */
+async function ruleLayerFolderIndex(
+  brandPath: string,
+  dirName: string,
+  ruleId: string,
+  collector: IssueCollector,
+): Promise<void> {
+  const dirPath = path.join(brandPath, dirName);
+  if (!(await isDir(dirPath))) return;
+
+  const hasReadme = await isFile(path.join(dirPath, 'README.md'));
+  const hasFramework = await isFile(path.join(dirPath, '_framework.md'));
+  if (!hasReadme && !hasFramework) {
+    collector.error(
+      ruleId,
+      `${dirName}/`,
+      `${dirName}/ directory must contain a canonical entry point (README.md or _framework.md)`,
+    );
+  }
+  if (hasReadme && hasFramework) {
+    collector.error(
+      ruleId,
+      `${dirName}/`,
+      `${dirName}/ must contain exactly one of README.md or _framework.md, not both`,
+    );
   }
 }
 
@@ -466,8 +584,23 @@ async function ruleAgentContextPriorityLayers(
   spec: BrandSpec,
   collector: IssueCollector,
 ): Promise<void> {
-  const filePath = path.join(brandPath, 'agent-context.md');
-  if (!(await isFile(filePath))) return;
+  // (v1.16) Resolve canonical agent-context source: single-file OR folder
+  // entry point. Same priority_layers contract applies in either case.
+  let filePath = path.join(brandPath, 'agent-context.md');
+  let relPath = 'agent-context.md';
+  if (!(await isFile(filePath))) {
+    const folderReadme = path.join(brandPath, 'agent-context', 'README.md');
+    const folderFramework = path.join(brandPath, 'agent-context', '_framework.md');
+    if (await isFile(folderReadme)) {
+      filePath = folderReadme;
+      relPath = 'agent-context/README.md';
+    } else if (await isFile(folderFramework)) {
+      filePath = folderFramework;
+      relPath = 'agent-context/_framework.md';
+    } else {
+      return;
+    }
+  }
   try {
     const parsed = await readFrontmatter(filePath);
     const data = parsed.data;
@@ -482,7 +615,7 @@ async function ruleAgentContextPriorityLayers(
       if (!validLayers.has(l)) {
         collector.error(
           'agent-context-priority-layers-resolve',
-          'agent-context.md',
+          relPath,
           `priority_layers entry '${l}' is not a declared layer (valid: ${[...validLayers].join(', ')})`,
         );
       }
