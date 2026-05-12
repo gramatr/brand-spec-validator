@@ -383,6 +383,15 @@ async function runCrossLayerRules(
     'agent-context-required',
     collector,
   );
+  await ruleLayerPatternExclusive(
+    brandPath,
+    'design-tokens.md',
+    'design-tokens',
+    'design-tokens-pattern-exclusive',
+    /* layerRequired */ true,
+    'design-tokens-required',
+    collector,
+  );
   await ruleLayerFolderIndex(
     brandPath,
     'identity',
@@ -399,6 +408,12 @@ async function runCrossLayerRules(
     brandPath,
     'agent-context',
     'agent-context-folder-index',
+    collector,
+  );
+  await ruleLayerFolderIndex(
+    brandPath,
+    'design-tokens',
+    'design-tokens-folder-index',
     collector,
   );
   await ruleAgentContextPriorityLayers(brandPath, spec, collector);

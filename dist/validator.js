@@ -230,9 +230,12 @@ async function runCrossLayerRules(brandPath, spec, collector, visited, freshness
     /* layerRequired */ true, 'vocabulary-required', collector);
     await ruleLayerPatternExclusive(brandPath, 'agent-context.md', 'agent-context', 'agent-context-pattern-exclusive', 
     /* layerRequired */ false, 'agent-context-required', collector);
+    await ruleLayerPatternExclusive(brandPath, 'design-tokens.md', 'design-tokens', 'design-tokens-pattern-exclusive', 
+    /* layerRequired */ true, 'design-tokens-required', collector);
     await ruleLayerFolderIndex(brandPath, 'identity', 'identity-folder-index', collector);
     await ruleLayerFolderIndex(brandPath, 'vocabulary', 'vocabulary-folder-index', collector);
     await ruleLayerFolderIndex(brandPath, 'agent-context', 'agent-context-folder-index', collector);
+    await ruleLayerFolderIndex(brandPath, 'design-tokens', 'design-tokens-folder-index', collector);
     await ruleAgentContextPriorityLayers(brandPath, spec, collector);
     await rulePromptValidatedExamples(brandPath, collector);
     await ruleUiTokensLayerOrder(brandPath, collector);
