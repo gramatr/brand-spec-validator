@@ -1,0 +1,32 @@
+version: 2
+
+# `gramatr-github-packages` registry auth: requires a Dependabot secret named
+# GH_PACKAGES_READ_TOKEN (a PAT with `read:packages` scope against the `gramatr` org),
+# added via this repo's (or the org's) Settings -> Secrets and variables -> Dependabot.
+registries:
+  gramatr-github-packages:
+    type: npm-registry
+    url: https://npm.pkg.github.com
+    token: "${{secrets.GH_PACKAGES_READ_TOKEN}}"
+
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    registries:
+      - gramatr-github-packages
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    groups:
+      gramatr-internal-packages:
+        patterns:
+          - "@gramatr/*"
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(ci)"
